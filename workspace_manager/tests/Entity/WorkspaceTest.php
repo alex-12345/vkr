@@ -42,7 +42,7 @@ class WorkspaceTest extends TestCase
     {
         $workspace = new Workspace();
         $workspace->setAdminEmail('vinnikov@yandex.ru');
-        $this->assertEquals($workspace->getAdminEmail(),'vinnikov@yandex.ru');
+        $this->assertEquals($workspace->getAdminEmail(),'vinnik2ov@yandex.ru');
     }
     public function setFalseAdminEmail()
     {
