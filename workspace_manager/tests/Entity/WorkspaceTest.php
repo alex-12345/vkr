@@ -11,7 +11,7 @@ class WorkspaceTest extends TestCase
     {
         $workspace = new Workspace();
         $workspace->setIP('123.123.123.111');
-        $this->assertEquals($workspace->getIP(),'123.123.123.121');
+        $this->assertEquals($workspace->getIP(),'123.123.123.111');
     }
     public function testsetRegistrationDate()
     {
