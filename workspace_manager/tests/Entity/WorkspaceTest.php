@@ -11,7 +11,7 @@ class WorkspaceTest extends TestCase
     {
         $workspace = new Workspace();
         $workspace->setIP('123.123.123.111');
-        $this->assertEquals($workspace->getIP(),'123.123.123.111');
+        $this->assertEquals($workspace->getIP(),'123.123.123.121');
     }
     public function testsetRegistrationDate()
     {
@@ -42,7 +42,8 @@ class WorkspaceTest extends TestCase
     {
         $workspace = new Workspace();
         $workspace->setAdminEmail('vinnikov@yandex.ru');
-        $this->assertEquals($workspace->getAdminEmail(),'vinnik2ov@yandex.ru');
+        print(123);
+        $this->assertEquals($workspace->getAdminEmail(),123);
     }
     public function setFalseAdminEmail()
     {
