@@ -25,7 +25,7 @@ class WorkspaceController extends AbstractController
     {
         $workspace = $workspaceRepository->findAll();
         $response = new Response(
-            json_encode($workspaceRepository)
+            json_encode($workspace)
         );
         //$response->setStatusCode(Response::HTTP_NOT_FOUND);
         $response->headers->set('Content-Type', 'application/json');
@@ -50,12 +50,12 @@ class WorkspaceController extends AbstractController
             $workspace->setAdminEmail($adminEmail);
             $workspace->setAdminPassword($adminPassword);
             $workspace->setIP($workspaceIP);
-        }catch (\TypeError $e){
+        }catch (\TypeError $e) {
             return JsonResponse::fromJsonString(self::MISSING_DATA_ERROR, JsonResponse::HTTP_BAD_REQUEST);
         }
         $errors = $validator->validate($workspace);
         //print_r((string) $errors);
-        if(count($errors) > 0){
+        if (count($errors) > 0) {
             return JsonResponse::fromJsonString(self::VALIDATION_DATA_ERROR, JsonResponse::HTTP_BAD_REQUEST);
         }
         $entityManager->persist($workspace);
