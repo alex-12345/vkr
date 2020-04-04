@@ -33,11 +33,10 @@ class WorkspaceController extends AbstractController
     }
 
     /**
-     * also needed mail_url param, generate confirm_key and ?saving in memcached?
      * @Route("/workspace", name="create_workspace", methods={"POST"})
      * @return Response
      */
-    public function createWorkspace(Request $request, ValidatorInterface $validator, EntityManagerInterface $entityManager, WorkspaceRepository $workspaceRepository)
+    public function createWorkspace(Request $request, ValidatorInterface $validator, EntityManagerInterface $entityManager)
     {
         $workspaceName = $request->query->get('workspace_name');
         $adminEmail = $request->query->get('workspace_admin_email');
@@ -46,15 +45,14 @@ class WorkspaceController extends AbstractController
 
         $workspace = new Workspace();
         try {
-            $workspace->setName($workspaceName);
-            $workspace->setAdminEmail($adminEmail);
-            $workspace->setAdminPassword($adminPassword);
-            $workspace->setIP($workspaceIP);
+            $workspace->setName($request->query->get('workspace_name'));
+            $workspace->setAdminEmail($request->query->get('workspace_admin_email'));
+            $workspace->setAdminPassword($request->query->get('workspace_admin_password'));
+            $workspace->setIP($request->query->get('workspace_ip'));
         }catch (\TypeError $e) {
             return JsonResponse::fromJsonString(self::MISSING_DATA_ERROR, JsonResponse::HTTP_BAD_REQUEST);
         }
         $errors = $validator->validate($workspace);
-        //print_r((string) $errors);
         if (count($errors) > 0) {
             return JsonResponse::fromJsonString(self::VALIDATION_DATA_ERROR, JsonResponse::HTTP_BAD_REQUEST);
         }
