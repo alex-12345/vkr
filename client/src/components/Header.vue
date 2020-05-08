@@ -1,6 +1,6 @@
 <template>
     <header>
-        <h1>Наш чат</h1>
+        <h1>Sapechat</h1>
         <nav>
             <ul>
                 <MenuItem 

@@ -1,56 +1,20 @@
 <template>
-    <div class="registrationPage">
+    <div class="authorizationPage">
         <Header 
             v-bind:headerItemArr="headerItemArr"
         />
-        <div class="registrationForm">
-            <h1>Наш чат</h1>
+        <div class="authorizationForm">
+            <h1>Sapechat</h1>
             <h2>Авторизуйтесь</h2>
-            <form class="r-form" @submit.prevent="onSubmit">
-                
-                <div class="form-item" :class="{ 'errorInput': $v.name.$error }">
-                    <input 
-                        type="text" 
-                        placeholder="Имя" 
-                        class="form__input"
-                        :class="{ 'error': $v.name.$error }"
-                        v-model="name"
-                        @change="$v.name.$touch()"
-                    >
-                    <div class="error" v-if="!$v.name.alpha">Имя должно состоять только из букв</div>
-                    <div class="error" v-if="!$v.name.required">Поле обязательно для заполнения</div>
-                </div>
-                
-                <div class="form-item" :class="{ 'errorInput': $v.ipAddress.$error }">
-                    <input 
-                        type="text" 
-                        placeholder="IP адрес" 
-                        class="form__input"
-                        :class="{ 'error': $v.ipAddress.$error }"
-                        v-model="ipAddress"
-                        @change="$v.ipAddress.$touch()"
-                    >
-                    <div class="error" v-if="!$v.ipAddress.minLength">Ip адрес должен быть формата 0.0.0.0</div>
-                    <div class="error" v-if="!$v.ipAddress.required">Поле обязательно для заполнения</div>
-                </div>
-
-                <div class="form-item" :class="{ 'errorInput': $v.password.$error}">
-                    <input 
-                        type="password" 
-                        placeholder="Пароль" 
-                        class="form__input"
-                        :class="{ 'error': $v.password.$error }"
-                        v-model="password"
-                        @change="$v.password.$touch()"
-                    >
-                    <div class="error" v-if="!$v.password.minLength">Пароль должен иметь как минимум {{$v.password.$params.minLength.min}} символов</div>
-                    <div class="error" v-if="!$v.password.required">Поле обязательно для заполнения</div>
-                </div>
-
-                <button class="button" type="submit" :disabled="submitStatus === 'PENDING'">Отправить</button>
-                <p class="typo__p" v-if="submitStatus === 'OK'">Спасибо за регистрацию!</p>
-                <p class="typo__p" v-if="submitStatus === 'ERROR'">Пожалуйста, заполните форму правильно.</p>
-                <p class="typo__p" v-if="submitStatus === 'PENDING'">Отправка...</p>
+            <form class="a-form" @submit.prevent="onSubmit">
+                <FormItem 
+                    v-for="formItem of formItemArr" :key="formItem.id"
+                    v-bind:formItem="formItem"
+                    v-on:input="processValue"
+                />
+                <ButtonItem
+                    v-bind:submitStatus="submitStatus"
+                />
             </form>
         </div>
     </div>
@@ -58,8 +22,10 @@
 
 <script>
     import Header from '@/components/Header'
-    //import axios from 'axios'
+    import FormItem from '@/components/inputForm/FormItem'
+    import ButtonItem from '@/components/inputForm/Button'
     import { required, minLength, ipAddress, alpha } from 'vuelidate/lib/validators'
+    //import axios from 'axios'
 
     export default {
         data() {
@@ -69,6 +35,26 @@
                     {id: 2, title: 'Как начать', important: false, path: "#"},
                     {id: 3, title: 'На главную', important: false, path: "/"},
                     {id: 4, title: 'Зарегестрироваться', important: true, path: "/registration"}
+                ],
+                formItemArr: [
+                    {id: 1, title: 'Имя', type: 'text', required: true, error: false, alpha: true,
+                        warningItemArr: [
+                            {id: 1, title: "Имя должно состоять только из букв", error: true},
+                            {id: 2, title: "Поле обязательно для заполнения", error: true},
+                        ]
+                    },
+                    {id: 2, title: 'Пароль', type: 'password', required: true, error: false, minLength: true,
+                        warningItemArr: [
+                            {id: 1, title: "Пароль должен иметь как минимум 6 сиволов", error: true},
+                            {id: 2, title: "Поле обязательно для заполнения", error: true},
+                        ]
+                    },
+                    {id: 3, title: 'Ip адрес', type: 'text', required: true, error: false, ipAddress: true,
+                        warningItemArr: [
+                            {id: 1, title: "Ip адрес должен быть формата 0.0.0.0", error: true},
+                            {id: 2, title: "Поле обязательно для заполнения", error: true},
+                        ]
+                    },
                 ],
                 name: '',
                 ipAddress: '',
@@ -91,38 +77,90 @@
             }
         },
         components: {
-            Header
+            Header,
+            FormItem,
+            ButtonItem
+        },
+        beforeUpdate: function () {
+
         },
         methods: {
-            onSubmit() {
-            this.$v.$touch()
-            if (this.$v.$invalid) {
-                this.submitStatus = 'ERROR'
-            } else {
-                console.log('submit!')
-                const user = {
-                    name: this.name,
-                    secondName: this.secondName,
-                    email: this.email,
-                    password: this.password
+            processValue: function (answer) {
+                if (answer.title === 'Имя')
+                {
+                    this.name = answer.value
+                    this.formItemArr[answer.id].error = this.$v.name.$invalid
+                    this.formItemArr[answer.id].required = this.$v.name.required
+                    this.formItemArr[answer.id].warningItemArr[1].error = this.$v.name.required
+                    this.formItemArr[answer.id].alpha = this.$v.name.alpha
+                    this.formItemArr[answer.id].warningItemArr[0].error = this.$v.name.alpha
                 }
-                console.log(user)
-                // do your submit logic here
-                this.submitStatus = 'PENDING'
-                /*axios.post('https://', platform)
-                .then(response => {
-                    console.log(response);
-                    this.submitStatus = 'OK'
-                })
-                .catch(error => {
-                    console.log(error);
+                else if (answer.title === 'Пароль') {
+                    this.password = answer.value
+                    this.formItemArr[answer.id].error = this.$v.password.$invalid
+                    this.formItemArr[answer.id].required = this.$v.password.required
+                    this.formItemArr[answer.id].warningItemArr[1].error = this.$v.password.required
+                    this.formItemArr[answer.id].minLength = this.$v.password.minLength
+                    this.formItemArr[answer.id].warningItemArr[0].error = this.$v.password.minLength
+                }
+                else if (answer.title === 'Ip адрес') {
+                    this.ipAddress = answer.value
+                    this.formItemArr[answer.id].error = this.$v.ipAddress.$invalid
+                    this.formItemArr[answer.id].required = this.$v.ipAddress.required
+                    this.formItemArr[answer.id].warningItemArr[1].error = this.$v.ipAddress.required
+                    this.formItemArr[answer.id].ipAddress = this.$v.ipAddress.ipAddress
+                    this.formItemArr[answer.id].warningItemArr[0].error = this.$v.ipAddress.ipAddress
+                }
+            },
+            onSubmit: function () {
+                this.$v.$touch()
+                if (this.$v.$invalid) {
                     this.submitStatus = 'ERROR'
-                });*/
-                setTimeout(() => {
-                    this.submitStatus = 'OK'
-                    this.$router.push('/')
-                }, 500)
-            }
+                    if (this.$v.name.$invalid) {
+                        this.formItemArr[0].error = !(this.$v.name.required && this.$v.name.alpha)
+                        this.formItemArr[0].required = this.$v.name.required
+                        this.formItemArr[0].warningItemArr[1].error = this.$v.name.required
+                        this.formItemArr[0].alpha = this.$v.name.alpha
+                        this.formItemArr[0].warningItemArr[0].error = this.$v.name.alpha
+                    }
+                    if (this.$v.password.$invalid) {
+                        this.formItemArr[1].error = !(this.$v.password.required && this.$v.password.minLength)
+                        this.formItemArr[1].required = this.$v.password.required
+                        this.formItemArr[1].warningItemArr[1].error = this.$v.password.required
+                        this.formItemArr[1].minLength = this.$v.password.minLength
+                        this.formItemArr[1].warningItemArr[0].error = this.$v.password.minLength
+                    }
+                    if (this.$v.ipAddress.$invalid) {
+                        this.formItemArr[2].error = !(this.$v.ipAddress.required && this.$v.ipAddress.ipAddress)
+                        this.formItemArr[2].required = this.$v.ipAddress.required
+                        this.formItemArr[2].warningItemArr[1].error = this.$v.ipAddress.required
+                        this.formItemArr[2].ipAddress = this.$v.ipAddress.ipAddress
+                        this.formItemArr[2].warningItemArr[0].error = this.$v.ipAddress.ipAddress
+                    }
+                } else {
+                    console.log('submit!')
+                    const user = {
+                        name: this.name,
+                        ipAddress: this.ipAddress,
+                        password: this.password
+                    }
+                    console.log(user)
+                    // do your submit logic here
+                    this.submitStatus = 'PENDING'
+                    /*axios.post('https://', platform)
+                    .then(response => {
+                        console.log(response);
+                        this.submitStatus = 'OK'
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.submitStatus = 'ERROR'
+                    });*/
+                    setTimeout(() => {
+                        this.submitStatus = 'OK'
+                        this.$router.push('/')
+                    }, 500)
+                }
             }
         }
     }
@@ -135,11 +173,8 @@
         box-sizing: border-box; 
     }
 
-    .registrationForm{
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%);
+    .authorizationForm{
+        margin: 150px auto;
         height: 405px;
         width: 370px;
         border: 1px solid #dbdbdb;
@@ -151,68 +186,9 @@
         margin: 15px 0px;
     }
 
-    .r-form{
+    .a-form{
         margin: 10px auto;
         padding: 0px 40px;
-    }
-
-    .form-item{
-        display: block;
-        width: 100%;
-        height: 40px;
-        margin-bottom: 30px;
-    }
-
-    .form-item div.error {
-        display: none;
-    }
-
-    div.errorInput div.error {
-        display: block;
-        font-size: 12px;
-        text-align: left;
-        color: red;
-        margin-top: 2px;
-    }
-
-    .form__input {
-        width: 100%;
-        height: 100%;
-        border: 1px solid #dbdbdb;
-        border-radius: 5px;
-        outline: none;
-        background-color: #fafafa;
-        padding-left: 10px;
-
-    }
-
-    .form__input:focus {
-        border-color: blue;
-    }
-
-    input.error {
-        border-color: red;
-    }
-
-    .button{
-        display: block;
-        width: 100%;
-        height: 40px;
-        background-color: #5e90ff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 0px 40px;
-    }
-
-    button:hover{
-        cursor: pointer; 
-    }
-
-    .typo__p {
-        font-size: 12px;
-        text-align: left;
-        margin-top: 2px;
     }
     
 </style>
