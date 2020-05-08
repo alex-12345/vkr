@@ -1,8 +1,5 @@
 <template>
     <div class="authorizationPage">
-        <Header 
-            v-bind:headerItemArr="headerItemArr"
-        />
         <div class="authorizationForm">
             <h1>Sapechat</h1>
             <h2>Авторизуйтесь</h2>
@@ -21,7 +18,6 @@
 </template>
 
 <script>
-    import Header from '@/components/Header'
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
     import { required, minLength, ipAddress, alpha } from 'vuelidate/lib/validators'
@@ -30,12 +26,6 @@
     export default {
         data() {
             return{
-                headerItemArr: [
-                    {id: 1, title: 'О нас', important: false, path: "#"},
-                    {id: 2, title: 'Как начать', important: false, path: "#"},
-                    {id: 3, title: 'На главную', important: false, path: "/"},
-                    {id: 4, title: 'Зарегестрироваться', important: true, path: "/registration"}
-                ],
                 formItemArr: [
                     {id: 1, title: 'Имя', type: 'text', required: true, error: false, alpha: true,
                         warningItemArr: [
@@ -77,7 +67,6 @@
             }
         },
         components: {
-            Header,
             FormItem,
             ButtonItem
         },

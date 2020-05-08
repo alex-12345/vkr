@@ -8,24 +8,25 @@ export default new Router({
     routes: [
         {
             path: '/',
-            component: () => import('./views/HomePage.vue')
-        },
-        {
-            path: '/registration',
-            component: () => import('./views/RegistrationPage')
-        },
-        {
-            path: '/registrationPlatform',
-            component: () => import('./views/RegistrationPlatformPage')
-        },
-        {
-            path: '/registrationUser',
-            component: () => import('./views/RegistrationUserPage')
-        },
-        {
-            path: '/authorization',
-            component: () => import('./views/AuthorizationPage')
-        }
-        
+            component: () => import('./views/HomePage.vue'),
+            children: [
+                {
+                    path: 'authorization',
+                    component: () => import('./views/AuthorizationPage')
+                },
+                {
+                    path: 'registration',
+                    component: () => import('./views/RegistrationPage'),
+                },
+                {
+                    path: 'registrationPlatform',
+                    component: () => import('./views/RegistrationPlatformPage')
+                },
+                {
+                    path: 'registrationUser',
+                    component: () => import('./views/RegistrationUserPage')
+                } 
+            ]
+        },    
     ]
 })

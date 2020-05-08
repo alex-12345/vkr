@@ -1,6 +1,10 @@
 <template>
-    <li v-bind:class="{important: menuItem.important}">
-        <router-link :to="menuItem">{{menuItem.title}}</router-link>
+    <li v-bind:class="{important: menuItem.important}" v-if="menuItem.visibility" v-on:click="$emit('clickItem', {id: menuItem.id})">
+        <router-link 
+            :to="menuItem"
+        >
+            {{menuItem.title}}
+        </router-link>
     </li>
 </template>
 

@@ -1,8 +1,5 @@
 <template>
     <div class="registrationPage">
-        <Header 
-            v-bind:headerItemArr="headerItemArr"
-        />
         <div class="choice">
             <div class="registrationPlatform">
                 <div class="text">
@@ -23,26 +20,13 @@
 </template>
 
 <script>
-    import Header from '@/components/Header'
-
     export default {
-        data() {
-            return{
-                headerItemArr: [
-                    {id: 1, title: 'О нас', important: false, path: "#"},
-                    {id: 2, title: 'Как начать', important: false, path: "#"},
-                    {id: 3, title: 'На главную', important: false, path: "/"},
-                    {id: 4, title: 'Авторизоваться', important: true, path: "/authorization"}
-                ]
-            }
-        },
         methods: {
             send: function (path) {
                 this.$router.push(path)
             }
         },
         components: {
-            Header
         }
     }
 </script>

@@ -1,8 +1,5 @@
 <template>
     <div class="registrationPage">
-        <Header 
-            v-bind:headerItemArr="headerItemArr"
-        />
         <div class="registrationForm">
             <h1>Наш чат</h1>
             <h2>Зарегестрируйтесь</h2>
@@ -83,7 +80,6 @@
 </template>
 
 <script>
-    import Header from '@/components/Header'
     //import axios from 'axios'
     import { required, minLength, email, sameAs, alpha } from 'vuelidate/lib/validators'
 
@@ -127,7 +123,6 @@
             }
         },
         components: {
-            Header
         },
         methods: {
             onSubmit() {
