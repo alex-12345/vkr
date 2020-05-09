@@ -21,37 +21,11 @@
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
     import { required, minLength, ipAddress, alpha } from 'vuelidate/lib/validators'
+    import {mapGetters, mapActions} from 'vuex'
     //import axios from 'axios'
 
     export default {
-        data() {
-            return{
-                formItemArr: [
-                    {id: 1, title: 'Имя', type: 'text', required: true, error: false, alpha: true,
-                        warningItemArr: [
-                            {id: 1, title: "Имя должно состоять только из букв", error: true},
-                            {id: 2, title: "Поле обязательно для заполнения", error: true},
-                        ]
-                    },
-                    {id: 2, title: 'Пароль', type: 'password', required: true, error: false, minLength: true,
-                        warningItemArr: [
-                            {id: 1, title: "Пароль должен иметь как минимум 6 сиволов", error: true},
-                            {id: 2, title: "Поле обязательно для заполнения", error: true},
-                        ]
-                    },
-                    {id: 3, title: 'Ip адрес', type: 'text', required: true, error: false, ipAddress: true,
-                        warningItemArr: [
-                            {id: 1, title: "Ip адрес должен быть формата 0.0.0.0", error: true},
-                            {id: 2, title: "Поле обязательно для заполнения", error: true},
-                        ]
-                    },
-                ],
-                name: '',
-                ipAddress: '',
-                password: '',
-                submitStatus: null
-            }
-        },
+        computed: mapGetters(["formItemArr", "name", "ipAddress", "password", "submitStatus"]),
         validations: {
             name: {
                 required,
@@ -70,61 +44,35 @@
             FormItem,
             ButtonItem
         },
-        beforeUpdate: function () {
-
-        },
         methods: {
+            ...mapActions(['changeValidationName', 'changeName', 'changeValidationPassword', 'changePassword', 'changeValidationIpAddress', 'changeIpAddress', 'changeSubmitStatus']),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
                 {
-                    this.name = answer.value
-                    this.formItemArr[answer.id].error = this.$v.name.$invalid
-                    this.formItemArr[answer.id].required = this.$v.name.required
-                    this.formItemArr[answer.id].warningItemArr[1].error = this.$v.name.required
-                    this.formItemArr[answer.id].alpha = this.$v.name.alpha
-                    this.formItemArr[answer.id].warningItemArr[0].error = this.$v.name.alpha
+                    this.changeName(answer.value)
+                    this.changeValidationName({invalid: this.$v.name.$invalid, required: this.$v.name.required, alpha: this.$v.name.alpha})
                 }
                 else if (answer.title === 'Пароль') {
-                    this.password = answer.value
-                    this.formItemArr[answer.id].error = this.$v.password.$invalid
-                    this.formItemArr[answer.id].required = this.$v.password.required
-                    this.formItemArr[answer.id].warningItemArr[1].error = this.$v.password.required
-                    this.formItemArr[answer.id].minLength = this.$v.password.minLength
-                    this.formItemArr[answer.id].warningItemArr[0].error = this.$v.password.minLength
+                    this.changePassword(answer.value)
+                    this.changeValidationPassword({invalid: this.$v.password.$invalid, required: this.$v.password.required, minLength: this.$v.password.minLength})
                 }
                 else if (answer.title === 'Ip адрес') {
-                    this.ipAddress = answer.value
-                    this.formItemArr[answer.id].error = this.$v.ipAddress.$invalid
-                    this.formItemArr[answer.id].required = this.$v.ipAddress.required
-                    this.formItemArr[answer.id].warningItemArr[1].error = this.$v.ipAddress.required
-                    this.formItemArr[answer.id].ipAddress = this.$v.ipAddress.ipAddress
-                    this.formItemArr[answer.id].warningItemArr[0].error = this.$v.ipAddress.ipAddress
+                    this.changeIpAddress(answer.value)
+                    this.changeValidationIpAddress({invalid: this.$v.ipAddress.$invalid, required: this.$v.ipAddress.required, ipAddress: this.$v.ipAddress.ipAddress})
                 }
             },
             onSubmit: function () {
                 this.$v.$touch()
                 if (this.$v.$invalid) {
-                    this.submitStatus = 'ERROR'
+                    this.changeSubmitStatus('ERROR')
                     if (this.$v.name.$invalid) {
-                        this.formItemArr[0].error = !(this.$v.name.required && this.$v.name.alpha)
-                        this.formItemArr[0].required = this.$v.name.required
-                        this.formItemArr[0].warningItemArr[1].error = this.$v.name.required
-                        this.formItemArr[0].alpha = this.$v.name.alpha
-                        this.formItemArr[0].warningItemArr[0].error = this.$v.name.alpha
+                        this.changeValidationName({invalid: this.$v.name.$invalid, required: this.$v.name.required, alpha: this.$v.name.alpha})
                     }
                     if (this.$v.password.$invalid) {
-                        this.formItemArr[1].error = !(this.$v.password.required && this.$v.password.minLength)
-                        this.formItemArr[1].required = this.$v.password.required
-                        this.formItemArr[1].warningItemArr[1].error = this.$v.password.required
-                        this.formItemArr[1].minLength = this.$v.password.minLength
-                        this.formItemArr[1].warningItemArr[0].error = this.$v.password.minLength
+                        this.changeValidationPassword({invalid: this.$v.password.$invalid, required: this.$v.password.required, minLength: this.$v.password.minLength})
                     }
                     if (this.$v.ipAddress.$invalid) {
-                        this.formItemArr[2].error = !(this.$v.ipAddress.required && this.$v.ipAddress.ipAddress)
-                        this.formItemArr[2].required = this.$v.ipAddress.required
-                        this.formItemArr[2].warningItemArr[1].error = this.$v.ipAddress.required
-                        this.formItemArr[2].ipAddress = this.$v.ipAddress.ipAddress
-                        this.formItemArr[2].warningItemArr[0].error = this.$v.ipAddress.ipAddress
+                        this.changeValidationIpAddress({invalid: this.$v.ipAddress.$invalid, required: this.$v.ipAddress.required, ipAddress: this.$v.ipAddress.ipAddress})
                     }
                 } else {
                     console.log('submit!')
@@ -135,7 +83,7 @@
                     }
                     console.log(user)
                     // do your submit logic here
-                    this.submitStatus = 'PENDING'
+                    this.changeSubmitStatus('PENDING')
                     /*axios.post('https://', platform)
                     .then(response => {
                         console.log(response);
@@ -146,7 +94,7 @@
                         this.submitStatus = 'ERROR'
                     });*/
                     setTimeout(() => {
-                        this.submitStatus = 'OK'
+                        this.changeSubmitStatus('OK')
                         this.$router.push('/')
                     }, 500)
                 }
