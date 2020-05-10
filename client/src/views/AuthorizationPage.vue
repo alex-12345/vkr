@@ -5,12 +5,12 @@
             <h2>Авторизуйтесь</h2>
             <form class="a-form" @submit.prevent="onSubmit">
                 <FormItem 
-                    v-for="formItem of formItemArr" :key="formItem.id"
+                    v-for="formItem of formItemArrLogin" :key="formItem.id"
                     v-bind:formItem="formItem"
                     v-on:input="processValue"
                 />
                 <ButtonItem
-                    v-bind:submitStatus="submitStatus"
+                    v-bind:submitStatus="submitStatusLogin"
                 />
             </form>
         </div>
@@ -25,17 +25,17 @@
     //import axios from 'axios'
 
     export default {
-        computed: mapGetters(["formItemArr", "name", "ipAddress", "password", "submitStatus"]),
+        computed: mapGetters(["formItemArrLogin", "nameLogin", "ipAddressLogin", "passwordLogin", "submitStatusLogin"]),
         validations: {
-            name: {
+            nameLogin: {
                 required,
                 alpha
             },
-            ipAddress: {
+            ipAddressLogin: {
                 required,
                 ipAddress
             },
-            password: {
+            passwordLogin: {
                 required,
                 minLength: minLength(6)
             }
@@ -45,34 +45,34 @@
             ButtonItem
         },
         methods: {
-            ...mapActions(['changeValidationName', 'changeName', 'changeValidationPassword', 'changePassword', 'changeValidationIpAddress', 'changeIpAddress', 'changeSubmitStatus']),
+            ...mapActions(['changeValidationNameLogin', 'changeNameLogin', 'changeValidationPasswordLogin', 'changePasswordLogin', 'changeValidationIpAddressLogin', 'changeIpAddressLogin', 'changeSubmitStatusLogin']),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
                 {
-                    this.changeName(answer.value)
-                    this.changeValidationName({invalid: this.$v.name.$invalid, required: this.$v.name.required, alpha: this.$v.name.alpha})
+                    this.changeNameLogin(answer.value)
+                    this.changeValidationNameLogin({invalid: this.$v.nameLogin.$invalid, required: this.$v.nameLogin.required, alpha: this.$v.nameLogin.alpha})
                 }
                 else if (answer.title === 'Пароль') {
-                    this.changePassword(answer.value)
-                    this.changeValidationPassword({invalid: this.$v.password.$invalid, required: this.$v.password.required, minLength: this.$v.password.minLength})
+                    this.changePasswordLogin(answer.value)
+                    this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
                 }
                 else if (answer.title === 'Ip адрес') {
-                    this.changeIpAddress(answer.value)
-                    this.changeValidationIpAddress({invalid: this.$v.ipAddress.$invalid, required: this.$v.ipAddress.required, ipAddress: this.$v.ipAddress.ipAddress})
+                    this.changeIpAddressLogin(answer.value)
+                    this.changeValidationIpAddressLogin({invalid: this.$v.ipAddressLogin.$invalid, required: this.$v.ipAddressLogin.required, ipAddress: this.$v.ipAddressLogin.ipAddress})
                 }
             },
             onSubmit: function () {
                 this.$v.$touch()
                 if (this.$v.$invalid) {
-                    this.changeSubmitStatus('ERROR')
-                    if (this.$v.name.$invalid) {
-                        this.changeValidationName({invalid: this.$v.name.$invalid, required: this.$v.name.required, alpha: this.$v.name.alpha})
+                    this.changeSubmitStatusLogin('ERROR')
+                    if (this.$v.nameLogin.$invalid) {
+                        this.changeValidationNameLogin({invalid: this.$v.nameLogin.$invalid, required: this.$v.nameLogin.required, alpha: this.$v.nameLogin.alpha})
                     }
-                    if (this.$v.password.$invalid) {
-                        this.changeValidationPassword({invalid: this.$v.password.$invalid, required: this.$v.password.required, minLength: this.$v.password.minLength})
+                    if (this.$v.passwordLogin.$invalid) {
+                        this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
                     }
-                    if (this.$v.ipAddress.$invalid) {
-                        this.changeValidationIpAddress({invalid: this.$v.ipAddress.$invalid, required: this.$v.ipAddress.required, ipAddress: this.$v.ipAddress.ipAddress})
+                    if (this.$v.ipAddressLogin.$invalid) {
+                        this.changeValidationIpAddressLogin({invalid: this.$v.ipAddressLogin.$invalid, required: this.$v.ipAddressLogin.required, ipAddress: this.$v.ipAddressLogin.ipAddress})
                     }
                 } else {
                     console.log('submit!')
@@ -83,7 +83,7 @@
                     }
                     console.log(user)
                     // do your submit logic here
-                    this.changeSubmitStatus('PENDING')
+                    this.changeSubmitStatusLogin('PENDING')
                     /*axios.post('https://', platform)
                     .then(response => {
                         console.log(response);
@@ -94,7 +94,7 @@
                         this.submitStatus = 'ERROR'
                     });*/
                     setTimeout(() => {
-                        this.changeSubmitStatus('OK')
+                        this.changeSubmitStatusLogin('OK')
                         this.$router.push('/')
                     }, 500)
                 }

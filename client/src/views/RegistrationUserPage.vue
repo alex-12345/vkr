@@ -1,79 +1,17 @@
 <template>
     <div class="registrationPage">
         <div class="registrationForm">
-            <h1>Наш чат</h1>
+            <h1>Sapechat</h1>
             <h2>Зарегестрируйтесь</h2>
             <form class="r-form" @submit.prevent="onSubmit">
-                
-                <div class="form-item" :class="{ 'errorInput': $v.name.$error }">
-                    <input 
-                        type="text" 
-                        placeholder="Имя" 
-                        class="form__input"
-                        :class="{ 'error': $v.name.$error }"
-                        v-model="name"
-                        @change="$v.name.$touch()"
-                    >
-                    <div class="error" v-if="!$v.name.alpha">Имя должно состоять только из букв</div>
-                    <div class="error" v-if="!$v.name.required">Поле обязательно для заполнения</div>
-                </div>
-                
-                <div class="form-item" :class="{ 'errorInput': $v.secondName.$error}">
-                    <input 
-                        type="text" 
-                        placeholder="Фамилия" 
-                        class="form__input"
-                        :class="{ 'error': $v.secondName.$error }"
-                        v-model="secondName"
-                        @change="$v.secondName.$touch()"
-                    >
-                    <div class="error" v-if="!$v.secondName.alpha">Фамилия должна состоять из букв</div>
-                    <div class="error" v-if="!$v.secondName.required">Поле обязательно для заполнения</div>
-                </div>
-
-                <div class="form-item" :class="{ 'errorInput': $v.email.$error}">
-                    <input 
-                        type="text" 
-                        placeholder="Email" 
-                        class="form__input"
-                        :class="{ 'error': $v.email.$error }"
-                        v-model="email"
-                        @change="$v.email.$touch()"
-                    >
-                    <div class="error" v-if="!$v.email.email">Email некорректен</div>
-                    <div class="error" v-if="!$v.email.required">Поле обязательно для заполнения</div>
-                </div>
-
-                <div class="form-item" :class="{ 'errorInput': $v.password.$error}">
-                    <input 
-                        type="password" 
-                        placeholder="Пароль" 
-                        class="form__input"
-                        :class="{ 'error': $v.password.$error }"
-                        v-model="password"
-                        @change="$v.password.$touch()"
-                    >
-                    <div class="error" v-if="!$v.password.minLength">Пароль должен иметь как минимум {{$v.password.$params.minLength.min}} символов</div>
-                    <div class="error" v-if="!$v.password.required">Поле обязательно для заполнения</div>
-                </div>
-
-                <div class="form-item" :class="{ 'errorInput': $v.repeatPassword.$error}">
-                    <input 
-                        type="password" 
-                        placeholder="Повторите пароль" 
-                        class="form__input"
-                        :class="{ 'error': $v.repeatPassword.$error }"
-                        v-model="repeatPassword"
-                        @change="$v.repeatPassword.$touch()"
-                    >
-                    <div class="error" v-if="!$v.repeatPassword.sameAsPassword">Пароли должны быть идентичны</div>
-                    <div class="error" v-if="!$v.repeatPassword.required">Поле обязательно для заполнения</div>
-                </div>
-
-                <button class="button" type="submit" :disabled="submitStatus === 'PENDING'">Отправить</button>
-                <p class="typo__p" v-if="submitStatus === 'OK'">Спасибо за регистрацию!</p>
-                <p class="typo__p" v-if="submitStatus === 'ERROR'">Пожалуйста, заполните форму правильно.</p>
-                <p class="typo__p" v-if="submitStatus === 'PENDING'">Отправка...</p>
+                <FormItem 
+                    v-for="formItem of formItemArrRegisterUser" :key="formItem.id"
+                    v-bind:formItem="formItem"
+                    v-on:input="processValue"
+                />
+                <ButtonItem
+                    v-bind:submitStatus="submitStatusRegisterUser"
+                />
             </form>
         </div>
     </div>
@@ -81,79 +19,129 @@
 
 <script>
     //import axios from 'axios'
+    import FormItem from '@/components/inputForm/FormItem'
+    import ButtonItem from '@/components/inputForm/Button'
+    import { mapGetters, mapActions } from 'vuex'
     import { required, minLength, email, sameAs, alpha } from 'vuelidate/lib/validators'
 
     export default {
-        data() {
-            return{
-                headerItemArr: [
-                    {id: 1, title: 'О нас', important: false, path: "#"},
-                    {id: 2, title: 'Как начать', important: false, path: "#"},
-                    {id: 3, title: 'На главную', important: false, path: "/"},
-                    {id: 4, title: 'Авторизоваться', important: true, path: "/authorization"}
-                ],
-                name: '',
-                secondName: '',
-                email: '',
-                password: '',
-                repeatPassword: '',
-                submitStatus: null
-            }
-        },
+        computed: mapGetters([ 
+            "formItemArrRegisterUser", 
+            "nameRegisterUser", 
+            "secondNameRegisterUser", 
+            "emailRegisterUser", 
+            "passwordRegisterUser", 
+            "repeatPasswordRegisterUser", 
+            "submitStatusRegisterUser"
+        ]),
         validations: {
-            name: {
+            nameRegisterUser: {
                 required,
                 alpha
             },
-            secondName: {
+            secondNameRegisterUser: {
                 required,
                 alpha
             },
-            email: {
+            emailRegisterUser: {
                 required,
                 email
             },
-            password: {
+            passwordRegisterUser: {
                 required,
                 minLength: minLength(6)
             },
-            repeatPassword: {
+            repeatPasswordRegisterUser: {
                 required,
-                sameAsPassword: sameAs('password')
+                sameAsPassword: sameAs('passwordRegisterUser')
             }
         },
         components: {
+            FormItem,
+            ButtonItem
         },
         methods: {
-            onSubmit() {
-            this.$v.$touch()
-            if (this.$v.$invalid) {
-                this.submitStatus = 'ERROR'
-            } else {
-                console.log('submit!')
-                const user = {
-                    name: this.name,
-                    secondName: this.secondName,
-                    email: this.email,
-                    password: this.password
+            ...mapActions([ 
+                'changeValidationNameRegisterUser', 
+                'changeNameRegisterUser', 
+                'changeValidationSecondNameRegisterUser', 
+                'changeSecondNameRegisterUser', 
+                'changeValidationEmailRegisterUser', 
+                'changeEmailRegisterUser',
+                'changeValidationPasswordRegisterUser', 
+                'changePasswordRegisterUser', 
+                'changeValidationRepeatPasswordRegisterUser', 
+                'changeRepeatPasswordRegisterUser', 
+                'changeSubmitStatusRegisterUser'
+            ]),
+            processValue: function (answer) {
+                if (answer.title === 'Имя')
+                {
+                    this.changeNameRegisterUser(answer.value)
+                    this.changeValidationNameRegisterUser({invalid: this.$v.nameRegisterUser.$invalid, required: this.$v.nameRegisterUser.required, alpha: this.$v.nameRegisterUser.alpha})
                 }
-                console.log(user)
-                // do your submit logic here
-                this.submitStatus = 'PENDING'
-                /*axios.post('https://', platform)
-                .then(response => {
-                    console.log(response);
-                    this.submitStatus = 'OK'
-                })
-                .catch(error => {
-                    console.log(error);
-                    this.submitStatus = 'ERROR'
-                });*/
-                setTimeout(() => {
-                    this.submitStatus = 'OK'
-                    this.$router.push('/')
-                }, 500)
-            }
+                else if (answer.title === 'Фамилия') {
+                    this.changeSecondNameRegisterUser(answer.value)
+                    this.changeValidationSecondNameRegisterUser({invalid: this.$v.secondNameRegisterUser.$invalid, required: this.$v.secondNameRegisterUser.required, alpha: this.$v.secondNameRegisterUser.alpha})
+                }
+                else if (answer.title === 'Email') {
+                    this.changeEmailRegisterUser(answer.value)
+                    this.changeValidationEmailRegisterUser({invalid: this.$v.emailRegisterUser.$invalid, required: this.$v.emailRegisterUser.required, email: this.$v.emailRegisterUser.email})
+                }
+                else if (answer.title === 'Пароль') {
+                    this.changePasswordRegisterUser(answer.value)
+                    this.changeValidationPasswordRegisterUser({invalid: this.$v.passwordRegisterUser.$invalid, required: this.$v.passwordRegisterUser.required, minLength: this.$v.passwordRegisterUser.minLength})
+                }
+                else if (answer.title === 'Повторите пароль') {
+                    this.changeRepeatPasswordRegisterUser(answer.value)
+                    this.changeValidationRepeatPasswordRegisterUser({invalid: this.$v.repeatPasswordRegisterUser.$invalid, required: this.$v.repeatPasswordRegisterUser.required, sameAsPassword: this.$v.repeatPasswordRegisterUser.sameAsPassword})
+                }
+            },
+            onSubmit() {
+                this.$v.$touch()
+                if (this.$v.$invalid) {
+                    this.changeSubmitStatusRegisterUser('ERROR')
+                    if (this.$v.nameRegisterUser.$invalid) {
+                        this.changeValidationNameRegisterUser({invalid: this.$v.nameRegisterUser.$invalid, required: this.$v.nameRegisterUser.required, alpha: this.$v.nameRegisterUser.alpha})
+                    }
+                    if (this.$v.secondNameRegisterUser.$invalid) {
+                        this.changeValidationSecondNameRegisterUser({invalid: this.$v.secondNameRegisterUser.$invalid, required: this.$v.secondNameRegisterUser.required, alpha: this.$v.secondNameRegisterUser.alpha})
+                    }
+                    if (this.$v.emailRegisterUser.$invalid) {
+                        this.changeValidationEmailRegisterUser({invalid: this.$v.emailRegisterUser.$invalid, required: this.$v.emailRegisterUser.required, email: this.$v.emailRegisterUser.email})
+                    }
+                    if (this.$v.passwordRegisterUser.$invalid) {
+                        this.changeValidationPasswordRegisterUser({invalid: this.$v.passwordRegisterUser.$invalid, required: this.$v.passwordRegisterUser.required, minLength: this.$v.passwordRegisterUser.minLength})
+                    }
+                    if (this.$v.repeatPasswordRegisterUser.$invalid) {
+                        this.changeValidationRepeatPasswordRegisterUser({invalid: this.$v.repeatPasswordRegisterUser.$invalid, required: this.$v.repeatPasswordRegisterUser.required, sameAsPassword: this.$v.repeatPasswordRegisterUser.sameAsPassword})
+                    }
+                } else {
+                    console.log('submit!')
+                    const user = {
+                        name: this.nameRegisterUser,
+                        secondName: this.secondNameRegisterUser,
+                        email: this.emailRegisterUser,
+                        password: this.passwordRegisterUser,
+                        repeatPassword: this.repeatPasswordRegisterUser
+                    }
+                    console.log(user)
+                    // do your submit logic here
+                    this.changeSubmitStatusRegisterUser('PENDING')
+                    /*axios.post('https://', platform)
+                    .then(response => {
+                        console.log(response);
+                        this.submitStatus = 'OK'
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.submitStatus = 'ERROR'
+                    });*/
+                    setTimeout(() => {
+                        this.changeSubmitStatusRegisterUser('OK')
+                        this.$router.push('/')
+                    }, 500)
+                }
             }
         }
     }
@@ -167,10 +155,7 @@
     }
 
     .registrationForm{
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%);
+        margin: 150px auto;
         height: 515px;
         width: 370px;
         border: 1px solid #dbdbdb;
@@ -185,66 +170,5 @@
     .r-form{
         margin: 10px auto;
         padding: 0px 40px;
-    }
-
-    .form-item{
-        display: block;
-        width: 100%;
-        height: 40px;
-        margin-bottom: 30px;
-    }
-
-    .form-item div.error {
-        display: none;
-    }
-
-    div.errorInput div.error {
-        display: block;
-        font-size: 12px;
-        text-align: left;
-        color: red;
-        margin-top: 2px;
-    }
-
-    .form__input {
-        width: 100%;
-        height: 100%;
-        border: 1px solid #dbdbdb;
-        border-radius: 5px;
-        outline: none;
-        background-color: #fafafa;
-        padding-left: 10px;
-
-    }
-
-    .form__input:focus {
-        border-color: blue;
-    }
-
-    input.error {
-        border-color: red;
-    }
-
-    .button{
-        display: block;
-        width: 100%;
-        height: 40px;
-        background-color: #5e90ff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 0px 40px;
-    }
-
-    button:hover{
-        cursor: pointer; 
-    }
-
-    .typo__p {
-        font-size: 12px;
-        text-align: left;
-        color: red;
-        margin-top: 2px;
-    }
-    
+    }    
 </style>

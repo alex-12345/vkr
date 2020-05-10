@@ -26,77 +26,81 @@ export default {
         submitStatus: null
     },
     actions: {
-        changeValidationName(ctx, vName) {
-            ctx.commit('updateValidationName', vName)
+        changeValidationNameLogin(ctx, vName) {
+            ctx.commit('updateValidationNameLogin', vName)
         },
-        changeName(ctx, name) {
-            ctx.commit('updateName', name)
+        changeNameLogin(ctx, name) {
+            ctx.commit('updateNameLogin', name)
         },
-        changeValidationPassword(ctx, vPassword) {
-            ctx.commit('updateValidationPassword', vPassword)
+        changeValidationPasswordLogin(ctx, vPassword) {
+            ctx.commit('updateValidationPasswordLogin', vPassword)
         },
-        changePassword(ctx, password) {
-            ctx.commit('updatePassword', password)
+        changePasswordLogin(ctx, password) {
+            ctx.commit('updatePasswordLogin', password)
         },
-        changeValidationIpAddress(ctx, vIpAddress) {
-            ctx.commit('updateValidationIpAddress', vIpAddress)
+        changeValidationIpAddressLogin(ctx, vIpAddress) {
+            ctx.commit('updateValidationIpAddressLogin', vIpAddress)
         },
-        changeIpAddress(ctx, ipAddress) {
-            ctx.commit('updateIpAddress', ipAddress)
+        changeIpAddressLogin(ctx, ipAddress) {
+            ctx.commit('updateIpAddressLogin', ipAddress)
         },
-        changeSubmitStatus(ctx, value) {
-            ctx.commit('updateSubmitStatus', value)
+        changeSubmitStatusLogin(ctx, value) {
+            ctx.commit('updateSubmitStatusLogin', value)
         }
     },
     mutations: {
-        updateValidationName(state, vName) {
+        updateValidationNameLogin(state, vName) {
             state.formItemArr[0].error = vName.invalid
             state.formItemArr[0].required = vName.required
+            //console.log('До 1 ', state.formItemArr[0].warningItemArr[1].error)
             state.formItemArr[0].warningItemArr[1].error = vName.required
+            //console.log('После 1 ', state.formItemArr[0].warningItemArr[1].error)
             state.formItemArr[0].alpha = vName.alpha
+            //console.log('До 2 ', state.formItemArr[0].warningItemArr[0].error)
             state.formItemArr[0].warningItemArr[0].error = vName.alpha
+            //console.log('После 2 ', state.formItemArr[0].warningItemArr[0].error)
         },
-        updateName(state, name) {
+        updateNameLogin(state, name) {
             state.name = name
         },
-        updateValidationPassword(state, vPassword) {
+        updateValidationPasswordLogin(state, vPassword) {
             state.formItemArr[1].error = vPassword.invalid
             state.formItemArr[1].required = vPassword.required
             state.formItemArr[1].warningItemArr[1].error = vPassword.required
             state.formItemArr[1].minLength = vPassword.minLength
             state.formItemArr[1].warningItemArr[0].error = vPassword.minLength
         },
-        updatePassword(state, password) {
+        updatePasswordLogin(state, password) {
             state.password = password
         },
-        updateValidationIpAddress(state, vIpAddress) {
+        updateValidationIpAddressLogin(state, vIpAddress) {
             state.formItemArr[2].error = vIpAddress.invalid
             state.formItemArr[2].required = vIpAddress.required
             state.formItemArr[2].warningItemArr[1].error = vIpAddress.required
             state.formItemArr[2].ipAddress = vIpAddress.ipAddress
             state.formItemArr[2].warningItemArr[0].error = vIpAddress.ipAddress
         },
-        updateIpAddress(state, ipAddress) {
+        updateIpAddressLogin(state, ipAddress) {
             state.ipAddress = ipAddress
         },
-        updateSubmitStatus(state, value) {
+        updateSubmitStatusLogin(state, value) {
             state.submitStatus = value
         }
     },
     getters: {
-        formItemArr(state) {
+        formItemArrLogin(state) {
             return state.formItemArr
         },
-        name(state) {
+        nameLogin(state) {
             return state.name
         },
-        ipAddress(state) {
+        ipAddressLogin(state) {
             return state.ipAddress
         },
-        password(state) {
+        passwordLogin(state) {
             return state.password
         },
-        submitStatus(state) {
+        submitStatusLogin(state) {
             return state.submitStatus
         }
     }
