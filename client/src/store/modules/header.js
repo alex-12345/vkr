@@ -5,7 +5,7 @@ export default {
             {id: 1, title: 'Как начать', important: false, visibility: true, path: "#"},
             {id: 2, title: 'На главную', important: false, visibility: false, path: "/"},
             {id: 3, title: 'Авторизоваться', important: true, visibility: true, path: "/authorization"},
-            {id: 4, title: 'Зарегестрироваться', important: false, visibility: true, path: "/registration"}
+            {id: 4, title: 'Зарегистрироваться', important: false, visibility: true, path: "/registration"}
         ]
     },
     actions: {

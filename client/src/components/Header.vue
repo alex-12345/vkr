@@ -6,7 +6,6 @@
                 <MenuItem 
                     v-for="menuItem of headerItemArr" :key="menuItem.id"
                     v-bind:menuItem="menuItem"
-                    v-on:clickItem="changeHeader"
                 />
             </ul>
         </nav>
@@ -15,19 +14,13 @@
 
 <script>
     import MenuItem from '@/components/MenuItem'
-    import {mapGetters, mapActions} from 'vuex'
+    import {mapGetters} from 'vuex'
 
     export default {
         components: {
             MenuItem
         },
-        computed: mapGetters(["headerItemArr"]),
-        methods: {
-            ...mapActions(['changeHeaderItems']),
-            changeHeader: function (answer) {
-                this.changeHeaderItems(answer.id)
-            }
-        }
+        computed: mapGetters(["headerItemArr"])
     }
 </script>
 

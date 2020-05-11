@@ -1,5 +1,5 @@
 <template>
-    <li v-bind:class="{important: menuItem.important}" v-if="menuItem.visibility" v-on:click="$emit('clickItem', {id: menuItem.id})">
+    <li v-bind:class="{important: menuItem.important}" v-if="menuItem.visibility">
         <router-link 
             :to="menuItem"
         >

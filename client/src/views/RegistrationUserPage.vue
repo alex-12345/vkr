@@ -2,7 +2,7 @@
     <div class="registrationPage">
         <div class="registrationForm">
             <h1>Sapechat</h1>
-            <h2>Зарегестрируйтесь</h2>
+            <h2>Зарегистрируйтесь</h2>
             <form class="r-form" @submit.prevent="onSubmit">
                 <FormItem 
                     v-for="formItem of formItemArrRegisterUser" :key="formItem.id"
@@ -72,7 +72,8 @@
                 'changePasswordRegisterUser', 
                 'changeValidationRepeatPasswordRegisterUser', 
                 'changeRepeatPasswordRegisterUser', 
-                'changeSubmitStatusRegisterUser'
+                'changeSubmitStatusRegisterUser',
+                'changeHeaderItems'
             ]),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
@@ -143,6 +144,9 @@
                     }, 500)
                 }
             }
+        },
+        mounted: function () {
+            this.changeHeaderItems(4)
         }
     }
 </script>

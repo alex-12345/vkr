@@ -45,7 +45,7 @@
             ButtonItem
         },
         methods: {
-            ...mapActions(['changeValidationNameLogin', 'changeNameLogin', 'changeValidationPasswordLogin', 'changePasswordLogin', 'changeValidationIpAddressLogin', 'changeIpAddressLogin', 'changeSubmitStatusLogin']),
+            ...mapActions(['changeValidationNameLogin', 'changeNameLogin', 'changeValidationPasswordLogin', 'changePasswordLogin', 'changeValidationIpAddressLogin', 'changeIpAddressLogin', 'changeSubmitStatusLogin', 'changeHeaderItems']),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
                 {
@@ -99,6 +99,9 @@
                     }, 500)
                 }
             }
+        },
+        mounted: function () {
+            this.changeHeaderItems(3)
         }
     }
 </script>

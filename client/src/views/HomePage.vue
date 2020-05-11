@@ -7,8 +7,13 @@
 
 <script>
     import Header from '@/components/Header'
+    import {mapActions} from 'vuex'
 
     export default {
+        beforeUpdate: function () {
+            this.changeHeaderItems(2)
+        },
+        methods: mapActions(['changeHeaderItems']),
         components: {
             Header
         }

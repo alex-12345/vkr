@@ -4,29 +4,33 @@
             <div class="registrationPlatform">
                 <div class="text">
                     <h2>Попробуйте Наш чат со своей командой</h2>
-                    <p>Зарегестрируйте новое рабочее пространство для вас и вашей команды.</p>
+                    <p>Зарегистрируйте новое рабочее пространство для вас и вашей команды.</p>
                 </div>                
-                <button type="button" v-on:click="send('/registrationPlatform')">Зарегестрировать рабочее пространство</button>
+                <button type="button" v-on:click="send('/registrationPlatform')">Зарегистрировать рабочее пространство</button>
             </div>
             <div class="registrationUser">
                 <div class="text">
                     <h2>Ваша команда уже использует Наш чат?</h2>
-                    <p>Зарегестрируйтесь сами.</p>
+                    <p>Зарегистрируйтесь сами.</p>
                 </div>                
-                <button type="button" v-on:click="send('/registrationUser')">Зарегестрироваться</button>
+                <button type="button" v-on:click="send('/registrationUser')">Зарегистрироваться</button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+    import {mapActions} from 'vuex'
+
     export default {
         methods: {
+            ...mapActions(['changeHeaderItems']),
             send: function (path) {
                 this.$router.push(path)
             }
         },
-        components: {
+        mounted: function () {
+            this.changeHeaderItems(4)
         }
     }
 </script>
