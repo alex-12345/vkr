@@ -20,16 +20,17 @@
 <script>
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
-    import { required, minLength, ipAddress, alpha } from 'vuelidate/lib/validators'
+    import { required, minLength, ipAddress, email } from 'vuelidate/lib/validators'
     import {mapGetters, mapActions} from 'vuex'
+    import Request from "@/services/Request.js";
     //import axios from 'axios'
 
     export default {
-        computed: mapGetters(["formItemArrLogin", "nameLogin", "ipAddressLogin", "passwordLogin", "submitStatusLogin"]),
+        computed: mapGetters(["formItemArrLogin", "emailLogin", "ipAddressLogin", "passwordLogin", "submitStatusLogin"]),
         validations: {
-            nameLogin: {
+            emailLogin: {
                 required,
-                alpha
+                email
             },
             ipAddressLogin: {
                 required,
@@ -45,12 +46,12 @@
             ButtonItem
         },
         methods: {
-            ...mapActions(['changeValidationNameLogin', 'changeNameLogin', 'changeValidationPasswordLogin', 'changePasswordLogin', 'changeValidationIpAddressLogin', 'changeIpAddressLogin', 'changeSubmitStatusLogin', 'changeHeaderItems']),
+            ...mapActions(['changeValidationEmailLogin', 'changeEmailLogin', 'changeValidationPasswordLogin', 'changePasswordLogin', 'changeValidationIpAddressLogin', 'changeIpAddressLogin', 'changeSubmitStatusLogin', 'changeHeaderItems']),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
                 {
-                    this.changeNameLogin(answer.value)
-                    this.changeValidationNameLogin({invalid: this.$v.nameLogin.$invalid, required: this.$v.nameLogin.required, alpha: this.$v.nameLogin.alpha})
+                    this.changeEmailLogin(answer.value)
+                    this.changeValidationEmailLogin({invalid: this.$v.emailLogin.$invalid, required: this.$v.emailLogin.required, email: this.$v.emailLogin.email})
                 }
                 else if (answer.title === 'Пароль') {
                     this.changePasswordLogin(answer.value)
@@ -65,8 +66,8 @@
                 this.$v.$touch()
                 if (this.$v.$invalid) {
                     this.changeSubmitStatusLogin('ERROR')
-                    if (this.$v.nameLogin.$invalid) {
-                        this.changeValidationNameLogin({invalid: this.$v.nameLogin.$invalid, required: this.$v.nameLogin.required, alpha: this.$v.nameLogin.alpha})
+                    if (this.$v.emailLogin.$invalid) {
+                        this.changeValidationEmailLogin({invalid: this.$v.emailLogin.$invalid, required: this.$v.emailLogin.required, email: this.$v.emailLogin.email})
                     }
                     if (this.$v.passwordLogin.$invalid) {
                         this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
@@ -77,26 +78,13 @@
                 } else {
                     console.log('submit!')
                     const user = {
-                        name: this.name,
-                        ipAddress: this.ipAddress,
-                        password: this.password
+                        username: this.emailLogin,
+                        password: this.passwordLogin
                     }
                     console.log(user)
                     // do your submit logic here
                     this.changeSubmitStatusLogin('PENDING')
-                    /*axios.post('https://', platform)
-                    .then(response => {
-                        console.log(response);
-                        this.submitStatus = 'OK'
-                    })
-                    .catch(error => {
-                        console.log(error);
-                        this.submitStatus = 'ERROR'
-                    });*/
-                    setTimeout(() => {
-                        this.changeSubmitStatusLogin('OK')
-                        this.$router.push('/')
-                    }, 500)
+                    Request.getToken(user)
                 }
             }
         },

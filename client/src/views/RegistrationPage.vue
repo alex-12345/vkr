@@ -3,14 +3,14 @@
         <div class="choice">
             <div class="registrationPlatform">
                 <div class="text">
-                    <h2>Попробуйте Наш чат со своей командой</h2>
+                    <h2>Попробуйте Sapechat со своей командой</h2>
                     <p>Зарегистрируйте новое рабочее пространство для вас и вашей команды.</p>
                 </div>                
                 <button type="button" v-on:click="send('/registrationPlatform')">Зарегистрировать рабочее пространство</button>
             </div>
             <div class="registrationUser">
                 <div class="text">
-                    <h2>Ваша команда уже использует Наш чат?</h2>
+                    <h2>Ваша команда уже использует Sapechat?</h2>
                     <p>Зарегистрируйтесь сами.</p>
                 </div>                
                 <button type="button" v-on:click="send('/registrationUser')">Зарегистрироваться</button>

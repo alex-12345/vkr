@@ -1,7 +1,7 @@
 export default {
     state: {
         formItemArr: [
-            {id: 1, title: 'Имя', type: 'text', required: true, error: false, alpha: true,
+            {id: 1, title: 'Имя', type: 'text', required: true, error: false, email: true,
                 warningItemArr: [
                     {id: 1, title: "Имя должно состоять только из букв", error: true},
                     {id: 2, title: "Поле обязательно для заполнения", error: true},
@@ -20,17 +20,17 @@ export default {
                 ]
             },
         ],
-        name: '',
+        email: '',
         ipAddress: '',
         password: '',
         submitStatus: null
     },
     actions: {
-        changeValidationNameLogin(ctx, vName) {
-            ctx.commit('updateValidationNameLogin', vName)
+        changeValidationEmailLogin(ctx, vEmail) {
+            ctx.commit('updateValidationEmailLogin', vEmail)
         },
-        changeNameLogin(ctx, name) {
-            ctx.commit('updateNameLogin', name)
+        changeEmailLogin(ctx, email) {
+            ctx.commit('updateEmailLogin', email)
         },
         changeValidationPasswordLogin(ctx, vPassword) {
             ctx.commit('updateValidationPasswordLogin', vPassword)
@@ -49,19 +49,15 @@ export default {
         }
     },
     mutations: {
-        updateValidationNameLogin(state, vName) {
-            state.formItemArr[0].error = vName.invalid
-            state.formItemArr[0].required = vName.required
-            //console.log('До 1 ', state.formItemArr[0].warningItemArr[1].error)
-            state.formItemArr[0].warningItemArr[1].error = vName.required
-            //console.log('После 1 ', state.formItemArr[0].warningItemArr[1].error)
-            state.formItemArr[0].alpha = vName.alpha
-            //console.log('До 2 ', state.formItemArr[0].warningItemArr[0].error)
-            state.formItemArr[0].warningItemArr[0].error = vName.alpha
-            //console.log('После 2 ', state.formItemArr[0].warningItemArr[0].error)
+        updateValidationEmailLogin(state, vEmail) {
+            state.formItemArr[0].error = vEmail.invalid
+            state.formItemArr[0].required = vEmail.required
+            state.formItemArr[0].warningItemArr[1].error = vEmail.required
+            state.formItemArr[0].email = vEmail.email
+            state.formItemArr[0].warningItemArr[0].error = vEmail.email
         },
-        updateNameLogin(state, name) {
-            state.name = name
+        updateEmailLogin(state, email) {
+            state.email = email
         },
         updateValidationPasswordLogin(state, vPassword) {
             state.formItemArr[1].error = vPassword.invalid
@@ -91,8 +87,8 @@ export default {
         formItemArrLogin(state) {
             return state.formItemArr
         },
-        nameLogin(state) {
-            return state.name
+        emailLogin(state) {
+            return state.email
         },
         ipAddressLogin(state) {
             return state.ipAddress
