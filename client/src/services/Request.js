@@ -2,18 +2,28 @@ import axios from 'axios'
 
 const Request = {
     server : "http://sapechat.ru/api/",
-    getToken(user) {
-        axios.get(this.server + "auth/login_check/", user)
+    postUser() {
+        /*axios({
+            method: 'get',
+            url: this.server + "auth/login_check/",
+            data: {
+                "username":"johndoe@mail.com",
+                "password":"rbrbvjhf"
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })        
         .then(response => {
-            /*this.$store.actions.changeSubmitStatusLogin('OK')
-            console.log('Status: ', this.$store.getters.submitStatusLogin())*/
             console.log('response: ', response)
             this.$router.push('/')
         })
         .catch(error => {
-            /*this.$store.actions.changeSubmitStatusLogin('ERROR')
-            console.log('Status: ', this.$store.getters.submitStatusLogin())*/
             console.log('error: ', error)
+        });*/
+        axios.get(this.server + 'auth/login_check/', { "username":"johndoe@mail.com", "password":"rbrbvjhf" })
+        .then(response => {
+            console.log(response.data);
         });
     }
 };

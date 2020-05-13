@@ -84,7 +84,7 @@
                     console.log(user)
                     // do your submit logic here
                     this.changeSubmitStatusLogin('PENDING')
-                    Request.getToken(user)
+                    Request.postUser()
                 }
             }
         },
