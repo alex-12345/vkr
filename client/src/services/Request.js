@@ -3,7 +3,7 @@ import axios from 'axios'
 const Request = {
     server : "http://sapechat.ru/api/",
     getToken(user) {
-        axios.get(this.server + "auth/login_check/", user)
+        axios.post(this.server + "auth/login_check", user)
         .then(response => {
             /*this.$store.actions.changeSubmitStatusLogin('OK')
             console.log('Status: ', this.$store.getters.submitStatusLogin())*/
