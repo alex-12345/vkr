@@ -5,32 +5,28 @@ namespace App\Controller;
 
 use App\Repository\WorkspaceRepository;
 use App\Response\ApiResponse;
+use App\Utils\SettingHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 class WorkspaceController extends AbstractController
 {
     /**
      * @Route("/api/workspace/info", methods={"GET"})
      */
-    public function showWorkspaceInfo(Request $request, WorkspaceRepository $repository, SerializerInterface $serializer)
+    public function showWorkspaceInfo(Request $request, SettingHelper $helper, WorkspaceRepository $repository, SerializerInterface $serializer)
     {
-        $workspace_key = $this->getParameter('app_secret');
         $data = json_decode($request->getContent(), true);
-        if(!isset($data['workspace_key'])){
-            return ApiResponse::createFailureResponse("Parameter 'workspace_key' is missing!", ApiResponse::HTTP_BAD_REQUEST);
-        };
-        if($data['workspace_key'] !== $workspace_key){
-            return ApiResponse::createFailureResponse("Parameter 'workspace_key' is not correct!", ApiResponse::HTTP_FORBIDDEN);
+        $errorResponse = $helper::checkApiSecret($data, $this->getParameter('app_secret'));
+        if($errorResponse){
+            return $errorResponse;
         }
         $workspace = $repository->find(1);
-        $workspace = $serializer->normalize($workspace);
-        return ApiResponse::createSuccessResponse($workspace);
-
-
-
+        $response_data = $serializer->normalize($workspace, null, [AbstractNormalizer::IGNORED_ATTRIBUTES => ['id']]);
+        return ApiResponse::createSuccessResponse($response_data);
     }
 
 }
