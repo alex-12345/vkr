@@ -22,11 +22,16 @@
     import ButtonItem from '@/components/inputForm/Button'
     import { required, minLength, ipAddress, email } from 'vuelidate/lib/validators'
     import {mapGetters, mapActions} from 'vuex'
-    import Request from "@/services/Request.js";
-    //import axios from 'axios'
 
     export default {
-        computed: mapGetters(["formItemArrLogin", "emailLogin", "ipAddressLogin", "passwordLogin", "submitStatusLogin"]),
+        computed: mapGetters([
+            "formItemArrLogin", 
+            "emailLogin", 
+            "ipAddressLogin", 
+            "passwordLogin", 
+            "submitStatusLogin",
+            "isAuthenticated"
+        ]),
         validations: {
             emailLogin: {
                 required,
@@ -46,7 +51,17 @@
             ButtonItem
         },
         methods: {
-            ...mapActions(['changeValidationEmailLogin', 'changeEmailLogin', 'changeValidationPasswordLogin', 'changePasswordLogin', 'changeValidationIpAddressLogin', 'changeIpAddressLogin', 'changeSubmitStatusLogin', 'changeHeaderItems']),
+            ...mapActions([
+                'changeValidationEmailLogin', 
+                'changeEmailLogin', 
+                'changeValidationPasswordLogin', 
+                'changePasswordLogin', 
+                'changeValidationIpAddressLogin', 
+                'changeIpAddressLogin', 
+                'changeSubmitStatusLogin', 
+                'changeHeaderItems',
+                'authRequest'
+            ]),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
                 {
@@ -78,13 +93,14 @@
                 } else {
                     console.log('submit!')
                     const user = {
-                        username: this.emailLogin,
-                        password: this.passwordLogin
+                        "username": this.emailLogin,
+                        "password": this.passwordLogin
                     }
                     console.log(user)
                     // do your submit logic here
                     this.changeSubmitStatusLogin('PENDING')
-                    Request.postUser()
+                    this.authRequest(user)
+                    console.log('isAuthenticated: ', this.isAuthenticated)
                 }
             }
         },
