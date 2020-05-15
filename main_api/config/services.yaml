@@ -28,3 +28,7 @@ services:
     # please note that last definitions always *replace* previous ones
     App\EventSubscriber\RefreshedTokenSubscriber:
         arguments: ['%gesdinet_jwt_refresh_token.ttl%','%env(APP_URL)%','/api/auth/token/refresh']
+
+    App\EventSubscriber\AppSecretCheckSubscriber:
+        arguments:
+            $AppSecretKey: '%app_secret%'

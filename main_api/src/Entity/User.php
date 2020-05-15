@@ -33,6 +33,31 @@ class User implements UserInterface
      */
     private $password;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isActive;
+
+    /**
+     * @ORM\Column(type="string", length=50)
+     */
+    private $firstName;
+
+    /**
+     * @ORM\Column(type="string", length=50)
+     */
+    private $secondName;
+
+    public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = ["ROLE_USER"], bool $isActive = false)
+    {
+        $this->firstName = $firstName;
+        $this->secondName = $secondName;
+        $this->email = $email;
+        $this->password = $password;
+        $this->roles = $roles;
+        $this->isActive = $isActive;
+
+    }
 
     public function getId(): ?int
     {
@@ -110,5 +135,41 @@ class User implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getIsActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): self
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getSecondName(): ?string
+    {
+        return $this->secondName;
+    }
+
+    public function setSecondName(string $secondName): self
+    {
+        $this->secondName = $secondName;
+
+        return $this;
     }
 }
