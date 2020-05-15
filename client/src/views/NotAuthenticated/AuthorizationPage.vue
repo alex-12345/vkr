@@ -30,7 +30,8 @@
             "ipAddressLogin", 
             "passwordLogin", 
             "submitStatusLogin",
-            "isAuthenticated"
+            "isAuthenticated",
+            "getUser"
         ]),
         validations: {
             emailLogin: {
@@ -60,7 +61,8 @@
                 'changeIpAddressLogin', 
                 'changeSubmitStatusLogin', 
                 'changeHeaderItems',
-                'authRequest'
+                'authRequest',
+                'addUser'
             ]),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
@@ -92,15 +94,17 @@
                     }
                 } else {
                     console.log('submit!')
-                    const user = {
+                    /*const user = {
                         "username": this.emailLogin,
                         "password": this.passwordLogin
                     }
-                    console.log(user)
+                    console.log(user)*/
                     // do your submit logic here
                     this.changeSubmitStatusLogin('PENDING')
-                    this.authRequest(user)
-                    console.log('isAuthenticated: ', this.isAuthenticated)
+                    this.addUser({name: this.emailLogin, pass: this.passwordLogin})
+                    this.authRequest(this.getUser).then(() => {
+                        this.$router.push("/chat");
+                    })
                 }
             }
         },
