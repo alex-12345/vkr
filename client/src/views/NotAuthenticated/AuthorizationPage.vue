@@ -103,6 +103,7 @@
                     this.changeSubmitStatusLogin('PENDING')
                     this.addUser({name: this.emailLogin, pass: this.passwordLogin})
                     this.authRequest(this.getUser).then(() => {
+                        this.changeSubmitStatusLogin('')
                         this.$router.push("/chat");
                     })
                 }
