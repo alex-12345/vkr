@@ -54,11 +54,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     */
 
 
-    public function findOneAdmin(): ?User
+    public function findSuperAdmin(): ?User
     {
         return $this->createQueryBuilder('u')
             ->AndWhere('u.roles LIKE :roles ')
-            ->setParameter('roles', "%ROLE_ADMIN%")
+            ->setParameter('roles', "%ROLE_SUPER_ADMIN%")
             ->orderBy('u.id','ASC')
             ->getQuery()
             ->setFirstResult(0)
@@ -67,5 +67,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
 
     }
+
+    public function findUserByEmail(string $email): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->AndWhere('u.email = :email ')
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->setFirstResult(0)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+        ;
+
+    }
+
 
 }

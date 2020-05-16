@@ -10,6 +10,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class User implements UserInterface
 {
+    const SUPER_ADMIN_ROLE = ["ROLE_SUPER_ADMIN"];
+    const ADMIN_ROLE = ["ROLE_ADMIN"];
+    const MODERATOR_ROLE = ["MODERATOR_ROLE"];
+    const USER_ROLE = ["USER_ROLE"];
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -48,7 +52,7 @@ class User implements UserInterface
      */
     private $secondName;
 
-    public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = ["ROLE_USER"], bool $isActive = false)
+    public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = self::USER_ROLE, bool $isActive = false)
     {
         $this->firstName = $firstName;
         $this->secondName = $secondName;
@@ -91,10 +95,6 @@ class User implements UserInterface
      */
     public function getRoles(): array
     {
-        //$roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        //$roles = ['ROLE_USER', 'ROLE_ADMIN','ROLE_MODERATOR'];
-
         return array_unique($this->roles);
     }
 

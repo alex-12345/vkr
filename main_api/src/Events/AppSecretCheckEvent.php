@@ -9,11 +9,12 @@ use Symfony\Contracts\EventDispatcher\Event;
 class AppSecretCheckEvent extends Event
 {
     protected ?string $appUserKey;
-    protected ?Response $response = null;
+    protected ?Response $response;
 
     public function __construct(?string $appUserKey)
     {
         $this->appUserKey = $appUserKey;
+        $this->response = null;
     }
 
     public function getAppUserKey()

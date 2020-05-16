@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Events\AppSecretCheckEvent;
+use App\Events\UserCreatedEvent;
 use App\Form\UserType;
 use App\Repository\UserRepository;
 use App\Response\ApiResponse;
@@ -28,9 +29,9 @@ class UserController extends AbstractController
         $dispatcher->dispatch($event);
         if($event->hasResponse()) return $event->getResponse();
 
-        $admin = $repository->findOneAdmin();
+        $admin = $repository->findSuperAdmin();
         if(is_null($admin)){
-            return ApiResponse::createFailureResponse('User with role "ADMIN" not found', ApiResponse::HTTP_NOT_FOUND);
+            return ApiResponse::createFailureResponse('User with role "SUPER_ADMIN" not found', ApiResponse::HTTP_NOT_FOUND);
         }
         $response_data = $serializer->normalize($admin, null, [AbstractNormalizer::IGNORED_ATTRIBUTES =>
             ['password','salt','username']]);
@@ -42,6 +43,7 @@ class UserController extends AbstractController
      */
     public function createAdmin(Request $request, UserRepository $repository, SerializerInterface $serializer,  UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher)
     {
+
         $event = new AppSecretCheckEvent($request->get("workspace_key"));
         $dispatcher->dispatch($event);
         if($event->hasResponse()) return $event->getResponse();
@@ -49,31 +51,30 @@ class UserController extends AbstractController
         $form = $this->createForm(UserType::class);
 
         $form->submit($request->request->all())->handleRequest(($request));
+        $link = $request->get("confirmation_page");
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid() && filter_var($link, FILTER_VALIDATE_URL)) {
             $data = $form->getData();
-            $admin = $repository->findOneAdmin();
-            if(\is_null($admin)){
-                $admin = new User();
-                $admin->setRoles(['ROLE_ADMIN']);
-                $admin->setIsActive(false);
-            }
-            $admin->setFirstName($data['first_name']);
-            $admin->setSecondName($data['second_name']);
-            $admin->setEmail($data['email']);
-            $admin->setPassword($passwordEncoder->encodePassword($admin, $data['password']));
-            $entityManager->persist($admin);
-            $entityManager->flush();
+            $super_admin = $repository->findSuperAdmin();
+            $conflict_email_user = $repository->findUserByEmail($data['email']);
 
-            // Call user created event dispatch */
+            if(is_null($super_admin) && is_null($conflict_email_user)){
+                $super_admin = new User($data['first_name'], $data['second_name'], $data['email'], null, USER::SUPER_ADMIN_ROLE);
+                $super_admin->setPassword($passwordEncoder->encodePassword($super_admin, $data['password']));
 
-            $response_data = $serializer->normalize($admin, null, [
-                AbstractNormalizer::IGNORED_ATTRIBUTES => ['password','salt','username']
-            ]);
-            return ApiResponse::createSuccessResponse(
-                    $serializer->normalize($admin, null, [
+                $entityManager->persist($super_admin);
+                $entityManager->flush();
+
+                $dispatcher->dispatch(new UserCreatedEvent($super_admin, $link));
+
+                return ApiResponse::createSuccessResponse(
+                    $serializer->normalize($super_admin, null, [
                         AbstractNormalizer::IGNORED_ATTRIBUTES => ['password','salt','username']
                     ]));
+            }
+
+            return ApiResponse::createFailureResponse("SuperAdmin or user with that 'email' already exist!", ApiResponse::HTTP_CONFLICT);
+
         }
         return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
     }

@@ -6,6 +6,5 @@ namespace App\Utils;
 
 class Validator
 {
-    /*TODO */
 
 }
