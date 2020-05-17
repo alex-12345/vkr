@@ -10,10 +10,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class User implements UserInterface
 {
-    const SUPER_ADMIN_ROLE = ["ROLE_SUPER_ADMIN"];
-    const ADMIN_ROLE = ["ROLE_ADMIN"];
-    const MODERATOR_ROLE = ["MODERATOR_ROLE"];
-    const USER_ROLE = ["USER_ROLE"];
+    const ROLE_SUPER_ADMIN = ["ROLE_SUPER_ADMIN"];
+    const ROLE_ADMIN = ["ROLE_ADMIN"];
+    const ROLE_MODERATOR = ["ROLE_MODERATOR"];
+    const ROLE_USER = ["ROLE_USER"];
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -33,7 +33,7 @@ class User implements UserInterface
 
     /**
      * @var string The hashed password
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", nullable=true)
      */
     private $password;
 
@@ -52,7 +52,7 @@ class User implements UserInterface
      */
     private $secondName;
 
-    public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = self::USER_ROLE, bool $isActive = false)
+    public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = self::ROLE_USER, bool $isActive = false)
     {
         $this->firstName = $firstName;
         $this->secondName = $secondName;

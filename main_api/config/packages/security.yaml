@@ -43,6 +43,10 @@ security:
 
     access_control:
         - { path: ^/api/auth/(login|token/refresh), roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/workspace/info, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/(workspace/info), roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/user/admin, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api, roles: ROLE_USER }
+    role_hierarchy:
+            ROLE_MODERATOR: [ROLE_USER]
+            ROLE_ADMIN: [ROLE_MODERATOR]
+            ROLE_SUPER_ADMIN: [ROLE_ADMIN]

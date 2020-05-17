@@ -32,3 +32,7 @@ services:
     App\EventSubscriber\AppSecretCheckSubscriber:
         arguments:
             $AppSecretKey: '%app_secret%'
+
+    App\Utils\Encryptor:
+        arguments:
+            $AppSecretKey: '%app_secret%'

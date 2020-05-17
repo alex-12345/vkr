@@ -27,14 +27,16 @@ class UserCreatedSubscriber implements EventSubscriberInterface
 
         $link = $event->getLink();
         $token = sha1("PRIMER");
-        /*
+/*
+ * //yandex maybe
         $email = (new Email())
-            ->from($smtpSandbox)
+            ->from('no-reply@mail.sapechat.ru')
             ->to($email)
             ->subject('Подтверждение регистрации!')
             ->html("<b>$first_name $second_name</b>, для подтверждения регистрации перейдите по следующей ссылке <a href='$link'>$link?token=$token</a>");
-        $mailer->send($email);
-        */
+        $this->mailer->send($email);
+*/
+
 
     }
 
