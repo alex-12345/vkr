@@ -8,7 +8,7 @@
             v-on:mouseenter="show(true)"
             v-on:mouseleave="show(false)"
         >
-            <img src="@/images/gear.png">
+            <img src="@/images/gear.png" alt="gear">
         </button>
         <div class="dropdown" 
             v-if="showMenuSidebar"
@@ -74,10 +74,10 @@
     .user {
         float: left;
         color: white;
-        height: 100%;
+        height: 35px;
         box-sizing: content-box;
         font-size: 20px;
-        padding: 15px 10px;
+        padding: 15px 0px 0px 10px;
     }
 
     .settings {
