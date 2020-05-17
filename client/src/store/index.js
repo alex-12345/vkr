@@ -6,6 +6,8 @@ import interfaceAuth from './modules/interfaceAuth'
 import registrationPlatform from './modules/registrationPlatform'
 import registrationUser from './modules/registrationUser'
 import dropDownMenu from './modules/dropDownMenu'
+import user from './modules/user'
+import navSidebarItems from './modules/navSidebarItems'
 
 Vue.use(Vuex)
 
@@ -16,6 +18,8 @@ export default new Vuex.Store({
         interfaceAuth,
         registrationPlatform,
         registrationUser,
-        dropDownMenu
+        dropDownMenu,
+        user,
+        navSidebarItems
     }
 })

@@ -1,5 +1,8 @@
 <template>
     <div class="userArea">
+        <div class="user">
+            {{secondNameUser}} {{nameUser}}
+        </div>
         <button 
             class="settings" 
             v-on:mouseenter="show(true)"
@@ -28,7 +31,9 @@
     export default {
         computed: mapGetters([
             "showMenuSidebar",
-            "dropDownArr"
+            "dropDownArr",
+            "nameUser",
+            "secondNameUser"
         ]),
         methods: {
             ...mapActions([
@@ -61,14 +66,26 @@
     .userArea {
         height: 50px;
         width: 100%;
-        background: #48acb8;
+        background: #007c88;
         position: relative;
         display: inline-block;
     }
+    
+    .user {
+        float: left;
+        color: white;
+        height: 100%;
+        box-sizing: content-box;
+        font-size: 20px;
+        padding: 15px 10px;
+    }
 
     .settings {
-        background: #48acb8;
+        background: #007c88;
+        width: 40px;
+        height: 40px;
         padding: 5px;
+        box-sizing: content-box;
         border: none;
         outline: none;
         cursor: pointer;
@@ -77,8 +94,8 @@
     }
 
     .settings img {
-        width: 40px;
-        height: 40px;
+        width: 100%;
+        height: 100%;
     }
 
     .dropdown {

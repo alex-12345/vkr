@@ -1,6 +1,9 @@
 <template>
     <aside class="aside">
         <h2>Sapechat</h2>
+        <LineSidebar />
+        <Navigation />
+        <LineSidebar />
         <div class="channels">
         </div>
         <UserArea />
@@ -9,10 +12,14 @@
 
 <script>
     import UserArea from '@/views/Authenticated/Sidebar/UserArea'
+    import LineSidebar from '@/views/Authenticated/Sidebar/LineSidebar'
+    import Navigation from '@/views/Authenticated/Sidebar/Navigation'
 
     export default {
         components: {
-            UserArea
+            UserArea,
+            LineSidebar,
+            Navigation
         }
     }
 </script>
