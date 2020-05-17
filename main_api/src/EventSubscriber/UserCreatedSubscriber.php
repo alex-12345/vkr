@@ -1,43 +1,45 @@
 <?php
-
+declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
 
-use App\Events\AppSecretCheckEvent;
 use App\Events\UserCreatedEvent;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 
 class UserCreatedSubscriber implements EventSubscriberInterface
 {
     protected MailerInterface $mailer;
+    protected string $sender;
+    protected string $workspace_name;
 
-    public function __construct(MailerInterface $mailer)
+    public function __construct(MailerInterface $mailer, string $sender, string $workspace_name)
     {
         $this->mailer = $mailer;
+        $this->sender = $sender;
+        $this->workspace_name = $workspace_name;
     }
 
     public function onUserCreated(UserCreatedEvent $event){
+
         $user = $event->getUser();
         $email = $user->getEmail();
-        $first_name = $user->getFirstName();
-        $second_name = $user->getSecondName();
 
-        $link = $event->getLink();
-        $token = sha1("PRIMER");
-/*
- * //yandex maybe
-        $email = (new Email())
-            ->from('no-reply@mail.sapechat.ru')
+        $email = (new TemplatedEmail())
+            ->from($this->sender)
             ->to($email)
-            ->subject('Подтверждение регистрации!')
-            ->html("<b>$first_name $second_name</b>, для подтверждения регистрации перейдите по следующей ссылке <a href='$link'>$link?token=$token</a>");
+            ->subject('Приглашение в рабочую площадку!')
+            ->htmlTemplate('emails/signup.html.twig')
+            ->context([
+                'first_name' => $user->getFirstName(),
+                'second_name' => $user->getSecondName(),
+                'link' => $event->getLink(),
+                'workspace_name' => $this->workspace_name
+            ]);
+
         $this->mailer->send($email);
-*/
-
-
     }
 
     public static function getSubscribedEvents()

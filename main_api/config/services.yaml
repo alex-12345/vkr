@@ -4,7 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    app_url: '%env(APP_URL)%'
     app_secret: '%env(APP_SECRET)%'
+    notification_sender_email: '%env(NOTIFICATION_SENDER_EMAIL)%'
 
 services:
     # default configuration for services in *this* file
@@ -32,6 +34,11 @@ services:
     App\EventSubscriber\AppSecretCheckSubscriber:
         arguments:
             $AppSecretKey: '%app_secret%'
+
+    App\EventSubscriber\UserCreatedSubscriber:
+        arguments:
+            $sender: '%notification_sender_email%'
+            $workspace_name: '%app_url%'
 
     App\Utils\Encryptor:
         arguments:
