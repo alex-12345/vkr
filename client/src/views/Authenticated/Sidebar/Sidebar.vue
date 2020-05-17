@@ -4,8 +4,7 @@
         <LineSidebar />
         <Navigation />
         <LineSidebar />
-        <div class="channels">
-        </div>
+        <ChatsBlock />
         <UserArea />
     </aside>
 </template>
@@ -14,12 +13,14 @@
     import UserArea from '@/views/Authenticated/Sidebar/UserArea'
     import LineSidebar from '@/views/Authenticated/Sidebar/LineSidebar'
     import Navigation from '@/views/Authenticated/Sidebar/Navigation'
+    import ChatsBlock from '@/views/Authenticated/Sidebar/ChatsBlock'
 
     export default {
         components: {
             UserArea,
             LineSidebar,
-            Navigation
+            Navigation,
+            ChatsBlock
         }
     }
 </script>
@@ -32,10 +33,6 @@
         height: 100%;
         float: left;
         background-color: #7edeea;
-    }
-
-    .channels {
-        flex: 1 0 auto;
     }
 
     h2 {
