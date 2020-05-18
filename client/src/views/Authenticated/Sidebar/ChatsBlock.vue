@@ -33,7 +33,7 @@
             }
         },
         components: {
-            Chats,
+            Chats
         }
     }
 </script>
@@ -63,14 +63,14 @@
     }
 
     .title {
-        width: 277px;
+        width: 100%;
         height: 40px;
         padding: 5px;
         color: #2c3e50;
         background-color: inherit;
         border-radius: 10px;
         cursor: pointer;
-        box-sizing: border-box;
+        box-sizing: padding-box;
         border: none;
         outline: none;
     }

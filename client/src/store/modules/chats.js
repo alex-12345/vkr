@@ -1,89 +1,51 @@
 export default {
     state: {
         chats: [
-            {id: 1, title: 'frontend', showSubChat: false,
+            {
+                id: 1, 
+                title: 'frontenddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 
+                showSubChat: false,
+                thereIsSsubChats: true,
+                showCross: false,
                 subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
+                    {id: 1, showCross: false, title: 'регистрация'},
+                    {id: 2, showCross: false, title: 'авторизация'},
+                    {id: 3, showCross: false, title: 'интерфейс чатов'},
                 ]
             },
-            {id: 2, title: 'backend', showSubChat: false,
+            {
+                id: 2, 
+                title: 'backend', 
+                showSubChat: false,
+                thereIsSsubChats: true,
+                showCross: false,
                 subChats: [
-                    {id: 1, title: 'api'},
-                    {id: 2, title: 'почтовый сервер'},
-                    {id: 3, title: 'установщик'},
-                    {id: 4, title: 'установщик'},
-                    {id: 5, title: 'установщик'},
-                    {id: 6, title: 'установщик'},
-                    {id: 7, title: 'установщик'},
-                    {id: 8, title: 'установщик'},
-                    {id: 9, title: 'установщик'},
-                    {id: 10, title: 'установщик'},
-                    {id: 11, title: 'установщик'},
-                    {id: 12, title: 'установщик'},
-                    {id: 13, title: 'установщик'},
-                    {id: 14, title: 'установщик'},
+                    {id: 1, showCross: false, title: 'api'},
+                    {id: 2, showCross: false, title: 'почтовый сервер'},
+                    {id: 3, showCross: false, title: 'установщик'},
+                    {id: 4, showCross: false, title: 'установщикdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'},
+                    {id: 5, showCross: false, title: 'установщик'},
+                    {id: 6, showCross: false, title: 'установщик'},
+                    {id: 7, showCross: false, title: 'установщик'},
+                    {id: 8, showCross: false, title: 'установщик'},
+                    {id: 9, showCross: false, title: 'установщик'},
+                    {id: 10, showCross: false, title: 'установщик'},
+                    {id: 11, showCross: false, title: 'установщик'},
+                    {id: 12, showCross: false, title: 'установщик'},
+                    {id: 13, showCross: false, title: 'установщик'},
+                    {id: 14, showCross: false, title: 'установщик'},
                 ]
             },
-            {id: 3, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 4, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 5, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 6, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 7, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 8, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 9, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
-            {id: 10, title: 'frontend', showSubChat: false,
-                subChats: [
-                    {id: 1, title: 'регистрация'},
-                    {id: 2, title: 'авторизация'},
-                    {id: 3, title: 'интерфейс чатов'},
-                ]
-            },
+            {
+                id: 3, 
+                title: 'frontend', 
+                showSubChat: false,
+                thereIsSsubChats: false,
+                showCross: false,
+            }
         ],
-        show: false
+        show: false,
+        showCross: false,
     },
     getters: {
         chats: state => state.chats,
@@ -95,6 +57,12 @@ export default {
         },
         changeShowSubChats(ctx, id) {
             ctx.commit('updateShowSubChats', id)
+        },
+        changeShowCross(ctx, id) {
+            ctx.commit('updateShowCross', id)
+        },
+        changeShowSubCross(ctx, allId) {
+            ctx.commit('updateShowSubCross', allId)
         },
         addChat(ctx, name) {
             ctx.commit('pushChat', name)
@@ -115,6 +83,12 @@ export default {
         },
         updateShowSubChats(state, id) {
             state.chats[id].showSubChat = !(state.chats[id].showSubChat)
+        },
+        updateShowCross(state, id) {
+            state.chats[id].showCross = !(state.chats[id].showCross)
+        },
+        updateShowSubCross(state, allId) {
+            state.chats[allId.idChat].subChats[allId.idSubChat].showCross = (!state.chats[allId.idChat].subChats[allId.idSubChat].showCross)
         },
         pushChat(state, name) {
             state.chats.push({id: state.chats.length + 1, title: name})
