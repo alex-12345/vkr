@@ -13,7 +13,7 @@ export default {
                     {id: 1, title: 'api'},
                     {id: 2, title: 'почтовый сервер'},
                     {id: 3, title: 'установщик'},
-                    /*{id: 4, title: 'установщик'},
+                    {id: 4, title: 'установщик'},
                     {id: 5, title: 'установщик'},
                     {id: 6, title: 'установщик'},
                     {id: 7, title: 'установщик'},
@@ -23,7 +23,63 @@ export default {
                     {id: 11, title: 'установщик'},
                     {id: 12, title: 'установщик'},
                     {id: 13, title: 'установщик'},
-                    {id: 14, title: 'установщик'},*/
+                    {id: 14, title: 'установщик'},
+                ]
+            },
+            {id: 3, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 4, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 5, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 6, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 7, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 8, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 9, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
+                ]
+            },
+            {id: 10, title: 'frontend', showSubChat: false,
+                subChats: [
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
                 ]
             },
         ],

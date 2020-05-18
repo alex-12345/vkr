@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="chats">
         <button class="chat" v-on:click="changeShow" v-bind:class="{focus: chat.showSubChat}">
             <img src="https://img.icons8.com/ios-filled/50/000000/hashtag.png"/>
             <div class="title">

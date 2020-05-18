@@ -46,13 +46,24 @@
 
     .chatsBlock {
         width: 95%;
+        height: 100%;
         margin: 10px auto;
-        flex: 1 0 auto;
-        overflow-y: auto;
+        overflow: auto;
+    }
+
+    .chatsBlock::-webkit-scrollbar {
+        width: 3%;
+        padding: 0px;
+        margin: 0px;
+    }
+
+    .chatsBlock::-webkit-scrollbar-thumb {
+        background: #f5f5f6;
+        border-radius: 10px;
     }
 
     .title {
-        width: 100%;
+        width: 277px;
         height: 40px;
         padding: 5px;
         color: #2c3e50;
