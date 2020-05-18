@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace App\Security\Voters;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -8,16 +9,18 @@ use \App\Entity\User as InvitedUser;
 
 class InviteVoter extends Voter
 {
-    const CREATE = 'inviteUser';
-    const EDIT = 'edit';
+    const CREATE = 'create';
+    const GET = 'get';
+
+    const SUBJECT = 'invites';
 
     protected function supports(string $attribute, $subject)
     {
-        if (!in_array($attribute, [self::CREATE, self::EDIT])) {
+        if (!in_array($attribute, [self::CREATE, self::GET])) {
             return false;
         }
 
-        if (!$subject instanceof InvitedUser) {
+        if (!$subject === self::SUBJECT) {
             return false;
         }
 
@@ -31,23 +34,20 @@ class InviteVoter extends Voter
             return false;
         }
 
-        $userInvite = $subject;
-
         switch ($attribute) {
             case self::CREATE:
-                return $this->canInvite($userInvite, $user);
-            case self::EDIT:
-                return $this->todo($userInvite, $user);
+                return $this->canInvite($user);
+            case self::GET:
+                return $this->getInvite($user);
         }
     }
 
-    private function canInvite(InvitedUser $userInvite, SessionUser $user)
+    private function canInvite(SessionUser $user)
     {
-
-        return in_array($user->getRoles(), [InvitedUser::ROLE_ADMIN, InvitedUser::ROLE_SUPER_ADMIN]);
+        return $this->getInvite($user);
     }
 
-    private function todo($userInvite, $user){
-
+    private function getInvite(SessionUser $user){
+        return in_array($user->getRoles(), [InvitedUser::ROLE_ADMIN, InvitedUser::ROLE_SUPER_ADMIN]);
     }
 }

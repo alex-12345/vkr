@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/api/user/admin", methods={"GET"})
+     * @Route("/api/users/admin", methods={"GET"})
      */
     public function showAdmin(Request $request, UserRepository $repository, SerializerInterface $serializer,  EventDispatcherInterface $dispatcher)
     {
@@ -40,7 +40,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/admin", methods={"POST"})
+     * @Route("/api/users/admin", methods={"POST"})
      */
     public function createAdmin(Request $request, UserRepository $repository, LinkBuilder $linkBuilder, SerializerInterface $serializer,  UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher)
     {
@@ -80,44 +80,6 @@ class UserController extends AbstractController
         }
         return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
     }
-
-    //invite/*
-    //COMPLETE пригласить пользователя(по email, имя фамилия, роль) и приласить повторно если уже есть запись с изменением
-    //TODO показать список приглашеных с паджинацией
-    //TODO удалить приглашение
-
-    //POST invite/confirm
-    //TODO принять приглашение(ввод пароля)
-
-    //PUT user/{id}/{photo, email, password, description}
-    //TODO редактировать данные пользователя(самим пользователем)
-    //  TODO обновить автарку
-    //  TODO обновить email(опционально)
-    //  TODO обновить пароль
-    //  TODO обновить краткую информацию
-
-    //PUT user/{id}/{roles, ban}
-    //TODO редактировать данные пользователя(модератором администратором)
-    //  TODO изменить права пользователя на модератора\админа и в нижнуюю сторону
-    //  TODO заблокировать\разблокировать пользователя(ban=1)
-
-    //POST access/recovery body{email}
-    //TODO ввысылка письма на восстановление пароля(по email)(высылка JWT)
-
-    //PUT user/password?token
-    //TODO восстановление пароля c его вводом
-
-    //GET user/id
-    //TODO получение данных конкретного пользователя
-    //GET user?pagin
-    //TODO получение списка пользователей с паджинацией
-
-    //GET search/user
-    //TODO поиск конкретного пользователя по имени или фамилии (с паджинацией)
-    //GET search/invite
-    //TODO поиск среди преглашений
-
-
 
 
 }

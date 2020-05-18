@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -8,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -36,23 +38,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
-    // /**
-    //  * @return User[] Returns an array of User objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
 
     public function findSuperAdmin(): ?User
     {
@@ -79,6 +64,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getOneOrNullResult();
         ;
 
+    }
+
+    public function findInvites(int $p_number, int $p_size) : Paginator
+    {
+        $firstResult = ($p_number-1) * $p_size;
+        $maxResult = $firstResult + $p_size;
+
+        $entityManager = $this->getEntityManager();
+        $query = $entityManager->createQuery('SELECT u
+            FROM App\Entity\User u
+            WHERE u.isActive = :isActive
+            ORDER BY u.id DESC'
+        )
+            ->setParameter('isActive', false)
+            ->setFirstResult($firstResult)
+            ->setMaxResults($maxResult);
+        return $paginator = new Paginator($query, false);
     }
 
 
