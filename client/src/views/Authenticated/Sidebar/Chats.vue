@@ -20,6 +20,18 @@
                 v-bind:type="'chat'"
             />
         </div>
+        <div class="addArea" v-show="chat.showCross">
+            <AddChatButton
+                v-bind:chatId="chat.id"
+                v-bind:type="'subChat'"
+            />
+        </div>
+        <div class="inputArea" v-show="chat.showSubChatInput">
+            <InputArea 
+                v-bind:type="'subChat'"
+                v-bind:chatId="chat.id" 
+            />
+        </div>
         <div class="subChatsArea" v-if="chat.showSubChat">
             <SubChats
                 v-for="subChat of chat.subChats" :key="subChat.id"
@@ -32,14 +44,18 @@
 
 <script>
     import SubChats from '@/views/Authenticated/Sidebar/SubChats'
+    import AddChatButton from '@/views/Authenticated/Sidebar/AddChatButton'
     import DeleteChatButton from '@/views/Authenticated/Sidebar/DeleteChatButton'
+    import InputArea from '@/views/Authenticated/Sidebar/InputArea'
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
         props: ['chat'],
         components: {
             SubChats,
-            DeleteChatButton
+            DeleteChatButton,
+            AddChatButton,
+            InputArea
         },
         computed: mapGetters([
             "subChats",
@@ -84,7 +100,7 @@
     }
 
     .focus, .focus:hover {
-        width: 85%;
+        width: 70%;
         background-color: #97f3ff;
         border-radius: 10px 0px 0px 10px;
     }
@@ -110,6 +126,15 @@
         white-space: nowrap;
     }
 
+    .addArea {
+        width: 15%;
+        height: 40px;
+        background-color: #97f3ff;
+        float: right;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+
     .deleteArea {
         width: 15%;
         height: 100%;
@@ -118,5 +143,15 @@
         float: right;
         box-sizing: border-box;
         padding: 10px;
+    }
+
+    .inputArea {
+        width: 90%;
+        height: 40px;
+        border-radius: 10px;
+        background-color: inherit;
+        margin-top: 10px;
+        padding-right: 10px;
+        float: right;
     }
 </style>

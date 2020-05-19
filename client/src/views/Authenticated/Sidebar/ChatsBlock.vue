@@ -8,6 +8,14 @@
                 Чаты
             </div>
         </button>
+        <div class="addArea" v-show="showChats">
+            <AddChatButton
+                v-bind:type="'chat'"
+            />
+        </div>
+        <div class="inputArea" v-show="showChatInput">
+            <InputArea v-bind:type="'chat'" />
+        </div>
         <div class="chatsArea" v-if="showChats">
             <Chats
                 v-for="chat of chats" :key="chat.id"
@@ -19,12 +27,15 @@
 
 <script>
     import Chats from '@/views/Authenticated/Sidebar/Chats'
+    import AddChatButton from '@/views/Authenticated/Sidebar/AddChatButton'
+    import InputArea from '@/views/Authenticated/Sidebar/InputArea'
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
         computed: mapGetters([
             "chats",
             "showChats",
+            "showChatInput"
         ]),
         methods: {
             ...mapActions(['changeShowChats']),
@@ -33,7 +44,9 @@
             }
         },
         components: {
-            Chats
+            Chats,
+            AddChatButton,
+            InputArea
         }
     }
 </script>
@@ -47,6 +60,7 @@
     .chatsBlock {
         width: 95%;
         height: 100%;
+        border-radius: 10px;
         margin: 10px auto;
         overflow: auto;
     }
@@ -80,7 +94,9 @@
     }
 
     .focus, .focus:hover {
+        width: 85%;
         background-color: #97f3ff;
+        border-radius: 10px 0px 0px 10px;
     }
 
     img {
@@ -99,5 +115,23 @@
         margin: 4px 0px 0px 40px;
     }
 
-    
+    .addArea {
+        width: 15%;
+        height: 40px;
+        background-color: #97f3ff;
+        border-radius: 0px 10px 10px 0px;
+        float: right;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+
+    .inputArea {
+        width: 90%;
+        height: 40px;
+        border-radius: 10px;
+        background-color: inherit;
+        margin-top: 10px;
+        padding-right: 10px;
+        float: right;
+    }
 </style>

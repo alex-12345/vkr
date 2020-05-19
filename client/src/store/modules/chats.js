@@ -7,6 +7,7 @@ export default {
                 showSubChat: false,
                 thereIsSsubChats: true,
                 showCross: false,
+                showSubChatInput: false,
                 subChats: [
                     {id: 1, showCross: false, title: 'регистрация'},
                     {id: 2, showCross: false, title: 'авторизация'},
@@ -19,6 +20,7 @@ export default {
                 showSubChat: false,
                 thereIsSsubChats: true,
                 showCross: false,
+                showSubChatInput: false,
                 subChats: [
                     {id: 1, showCross: false, title: 'api'},
                     {id: 2, showCross: false, title: 'почтовый серверhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'},
@@ -42,14 +44,18 @@ export default {
                 showSubChat: false,
                 thereIsSsubChats: false,
                 showCross: false,
+                showSubChatInput: false,
+                subChats: []
             }
         ],
         show: false,
         showCross: false,
+        showChatInput: false,
     },
     getters: {
         chats: state => state.chats,
         showChats: state => state.show,
+        showChatInput: state => state.showChatInput,
     },
     actions: {
         changeShowChats(ctx) {
@@ -64,11 +70,18 @@ export default {
         changeShowSubCross(ctx, allId) {
             ctx.commit('updateShowSubCross', allId)
         },
+        changeShowChatInput(ctx) {
+            ctx.commit('updateShowChatInput')
+        },
+        changeShowSubChatInput(ctx, id) {
+            ctx.commit('updateShowSubChatInput', id)
+        },
         addChat(ctx, name) {
             ctx.commit('pushChat', name)
         },
-        addSubchats(ctx, id, name) {
-            ctx.commit('pushSubchat', id, name)
+        addSubChat(ctx, newSubChat) {
+            console.log('Я тут')
+            ctx.commit('pushSubChat', newSubChat)
         },
         delChat(ctx, id) {
             ctx.commit('delChat', id)
@@ -97,11 +110,32 @@ export default {
             }            
             state.chats[allId.idChat].subChats[allId.idSubChat].showCross = (!state.chats[allId.idChat].subChats[allId.idSubChat].showCross)
         },
-        pushChat(state, name) {
-            state.chats.push({id: state.chats.length + 1, title: name})
+        updateShowChatInput(state) {
+            state.showChatInput = !(state.showChatInput)
         },
-        pushSubchat(state, id, name) {
-            state.chats[id].subchats.push({id: state.chats[id].subchats.length + 1, title: name})
+        updateShowSubChatInput(state, id) {
+            state.chats[id].showSubChatInput = !(state.chats[id].showSubChatInput)
+        },
+        pushChat(state, name) {
+            state.chats.push({
+                id: state.chats.length + 1, 
+                title: name, 
+                showSubChat: false,
+                thereIsSsubChats: false,
+                showCross: false,
+                showSubChatInput: false,
+                subChats: []
+            })
+        },
+        pushSubChat(state, newSubChat) {
+            if (state.chats[newSubChat.id].subChats.length === 0) {
+                state.chats[newSubChat.id].thereIsSsubChats = true
+            }
+            state.chats[newSubChat.id].subChats.push({
+                id: state.chats[newSubChat.id].length + 1, 
+                showCross: false,
+                title: newSubChat.name,
+            })
         },
         delChat(state, id) {
             state.chats.splice(id, 1)
