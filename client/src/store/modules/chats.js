@@ -21,7 +21,7 @@ export default {
                 showCross: false,
                 subChats: [
                     {id: 1, showCross: false, title: 'api'},
-                    {id: 2, showCross: false, title: 'почтовый сервер'},
+                    {id: 2, showCross: false, title: 'почтовый серверhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'},
                     {id: 3, showCross: false, title: 'установщик'},
                     {id: 4, showCross: false, title: 'установщикdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'},
                     {id: 5, showCross: false, title: 'установщик'},
@@ -70,11 +70,11 @@ export default {
         addSubchats(ctx, id, name) {
             ctx.commit('pushSubchat', id, name)
         },
-        delChat(ctx, name) {
-            ctx.commit('delChat', name)
+        delChat(ctx, id) {
+            ctx.commit('delChat', id)
         },
-        delSubchats(ctx, id, name) {
-            ctx.commit('delSubchat', id, name)
+        delSubchats(ctx, allId) {
+            ctx.commit('delSubchat', allId)
         },
     },
     mutations: {
@@ -88,6 +88,13 @@ export default {
             state.chats[id].showCross = !(state.chats[id].showCross)
         },
         updateShowSubCross(state, allId) {
+            for (let j = 0; j < state.chats.length; j++) {
+                if (state.chats[j].thereIsSsubChats === true) {
+                    for (let i = 0; i < state.chats[j].subChats.length; i++) {
+                        state.chats[j].subChats[i].showCross = false
+                    }
+                }
+            }            
             state.chats[allId.idChat].subChats[allId.idSubChat].showCross = (!state.chats[allId.idChat].subChats[allId.idSubChat].showCross)
         },
         pushChat(state, name) {
@@ -96,11 +103,23 @@ export default {
         pushSubchat(state, id, name) {
             state.chats[id].subchats.push({id: state.chats[id].subchats.length + 1, title: name})
         },
-        delChat(state, name) {
-            state.chats.push({id: state.chats.length + 1, title: name})
+        delChat(state, id) {
+            state.chats.splice(id, 1)
+            for (let i = id; i < state.chats.length; i++) {
+                state.chats[i].id = state.chats[i].id - 1
+            }
+            if (state.chats.length === 0) {
+                state.show = false
+            }
         },
-        delSubchat(state, id, name) {
-            state.chats[id].subchats.push({id: state.chats[id].subchats.length + 1, title: name})
+        delSubchat(state, allId) {
+            state.chats[allId.idChat].subChats.splice(allId.idSubChat, 1)
+            for (let i = allId.idSubChat; i < state.chats[allId.idChat].subChats.length; i++) {
+                state.chats[allId.idChat].subChats[i].id = state.chats[allId.idChat].subChats[i].id - 1
+            }
+            if (state.chats[allId.idChat].subChats.length === 0) {
+                state.chats[allId.idChat].thereIsSsubChats = false
+            }
         },
     }
 }

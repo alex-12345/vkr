@@ -6,22 +6,20 @@
             v-bind:class="{focus: chat.showSubChat}"
         >
             <img 
-                src="https://img.icons8.com/ios-filled/50/000000/hashtag.png" 
-                v-if="!chat.thereIsSsubChats"
-            >
-            <img 
                 src="@/images/listIcon.png" 
                 alt="list icon" 
                 v-bind:class="{expand: chat.showSubChat}" 
-                v-if="chat.thereIsSsubChats"
             >
             <div class="title">
                 {{chat.title}}
             </div>
-            <DeleteChatButton 
-                v-show="chat.showCross"
-            />
         </button>
+        <div class="deleteArea" v-show="chat.showCross">
+            <DeleteChatButton 
+                v-bind:chatId="chat.id"
+                v-bind:type="'chat'"
+            />
+        </div>
         <div class="subChatsArea" v-if="chat.showSubChat">
             <SubChats
                 v-for="subChat of chat.subChats" :key="subChat.id"
@@ -58,9 +56,17 @@
 </script>
 
 <style scoped>
-    .chat {
-        float: right;
+    .chats {
         width: 97%;
+        border-radius: 10px;
+        background-color: inherit;
+        float: right;
+        margin-top: 10px;
+    }
+
+    .chat {
+        float: left;
+        width: 100%;
         height: 40px;
         color: #2c3e50;
         text-align: left;
@@ -70,7 +76,6 @@
         box-sizing: padding-box;
         border: none;
         outline: none;
-        margin: 10px 0px 0px 0px;
         padding: 5px;
     }
 
@@ -79,7 +84,9 @@
     }
 
     .focus, .focus:hover {
+        width: 85%;
         background-color: #97f3ff;
+        border-radius: 10px 0px 0px 10px;
     }
 
     img {
@@ -98,7 +105,18 @@
         text-overflow: ellipsis;
         overflow: hidden;
         margin: 4px 0px 0px 10px;
-        width: 50%;
+        width: 70%;
         float: left;
+        white-space: nowrap;
+    }
+
+    .deleteArea {
+        width: 15%;
+        height: 100%;
+        background-color: #97f3ff;
+        border-radius: 0px 10px 10px 0px;
+        float: right;
+        box-sizing: border-box;
+        padding: 10px;
     }
 </style>

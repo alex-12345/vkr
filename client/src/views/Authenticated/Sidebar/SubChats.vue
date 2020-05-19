@@ -1,16 +1,23 @@
 <template>
-    <button 
-        class="subChat"
-        v-on:click="changeShowCross"
-    >
-        <img src="https://img.icons8.com/ios-filled/50/000000/hashtag.png"/>
-        <div class="title">
-            {{subChat.title}}
+    <div class="subChat" v-bind:class="{focusSubChat: subChat.showCross}">
+        <button 
+            class="subChatTitle"
+            v-on:click="changeShowCross"
+            v-bind:class="{focus: subChat.showCross}"
+        >
+            <img src="https://img.icons8.com/ios-filled/50/000000/hashtag.png"/>
+            <div class="title">
+                {{subChat.title}}
+            </div>
+        </button>
+        <div class="deleteArea" v-show="subChat.showCross">
+            <DeleteChatButton 
+                v-bind:chatId="chatId"
+                v-bind:subChatId="subChat.id"
+                v-bind:type="'subChat'"
+            />
         </div>
-        <DeleteChatButton 
-            v-show="subChat.showCross"
-        />
-    </button>
+    </div>
 </template>
 
 <script>
@@ -27,15 +34,24 @@
         },
         components: {
             DeleteChatButton
-        }
+        },
     }
 </script>
 
 <style scoped>
     .subChat {
-        float: right;
         width: 93%;
         height: 40px;
+        border-radius: 10px;
+        background-color: inherit;
+        float: right;
+        margin-top: 10px;
+    }
+
+    .subChatTitle {
+        float: left;
+        width: 100%;
+        height: 100%;
         color: #2c3e50;
         text-align: left;
         background-color: inherit;
@@ -44,16 +60,17 @@
         box-sizing: border-box;
         border: none;
         outline: none;
-        margin: 10px 0px 0px 0px;
         padding: 5px;
     }
 
-    .subChat:hover {
+    .subChatTitle:hover {
         background-color: #89e6f1;
     }
 
-    .subChat:focus {
+    .focus, .focus:hover {
+        width: 85%;
         background-color: #97f3ff;
+        border-radius: 10px 0px 0px 10px;
     }
 
     img {
@@ -68,7 +85,22 @@
         margin: 4px 0px 0px 10px;
         text-overflow: ellipsis;
         overflow: hidden;
-        width: 50%;
+        width: 75%;
         float: left;
+        white-space: nowrap;
+    }
+
+    .deleteArea {
+        width: 15%;
+        height: 100%;
+        background-color: #97f3ff;
+        border-radius: 0px 10px 10px 0px;
+        float: right;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+
+    .focusSubChat{
+        background-color: #97f3ff;
     }
 </style>
