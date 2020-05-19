@@ -8,14 +8,17 @@ use App\Entity\User;
 use App\Events\UserCreatedEvent;
 use App\Form\InviteType;
 use App\Response\ApiResponse;
+use App\Utils\Encryptor;
 use App\Utils\LinkBuilder;
+use App\Utils\TokenManuallyGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -44,7 +47,7 @@ class InviteUserController extends AbstractController
                 $entityManager->persist($newUser);
                 $entityManager->flush();
 
-                $link = $linkBuilder->getInviteConfirmLink($data['link'], $data['email']);
+                $link = $linkBuilder->getInviteConfirmLink($data['link'],['id' =>$newUser->getId()]);
                 $dispatcher->dispatch(new UserCreatedEvent($newUser,$link));
 
                 return ApiResponse::createSuccessResponse(
@@ -80,7 +83,7 @@ class InviteUserController extends AbstractController
                 $entityManager->persist($invitedUser);
                 $entityManager->flush();
 
-                $link = $linkBuilder->getInviteConfirmLink($data['link'], $data['email']);
+                $link = $linkBuilder->getInviteConfirmLink($data['link'], ['id' => $invitedUser->getId()]);
                 $dispatcher->dispatch(new UserCreatedEvent($invitedUser,$link));
 
                 return ApiResponse::createSuccessResponse(
@@ -112,9 +115,50 @@ class InviteUserController extends AbstractController
     }
 
     /**
+     * @Route("/api/invites/{id}", methods={"DELETE"})
+     */
+    public function removeInvite(int $id,  EntityManagerInterface $entityManager, SerializerInterface $serializer)
+    {
+        $this->denyAccessUnlessGranted('remove', 'invites');
+
+        $invitedUser = $entityManager->getRepository(User::class)->findOneBy(["id"=>$id, "isActive" => false]);
+        if(!is_null($invitedUser))
+        {
+            $entityManager->remove($invitedUser);
+            $entityManager->flush();
+            return ApiResponse::createSuccessResponse(null);
+        }
+        return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @Route("/api/invites/{id}/status", methods={"GET"})
+     */
+    public function showInviteStatus(int $id,  Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, Encryptor $encryptor)
+    {
+        $encryptPayload = ['id'=> $id];
+        if($request->query->has("admin"))
+            $encryptPayload['status'] = true;
+        $hash = ($request->query->has("hash"))? $request->query->get("hash") : null;
+
+        if($hash === $encryptor->computedCheckSim($encryptPayload)) {
+            $rsm = new ResultSetMappingBuilder($entityManager);
+            $rsm->addScalarResult('is_active', 'is_active');
+            $query = $entityManager->createNativeQuery('SELECT is_active FROM user WHERE id = ? AND is_active = 0 LIMIT 0, 1', $rsm);
+            $query->setParameter(1, $id);
+            $data = $query->getOneOrNullResult();
+            if (count($data)) {
+                return ApiResponse::createSuccessResponse($data);
+            }
+            return ApiResponse::createFailureResponse("Invite not found", ApiResponse::HTTP_NOT_FOUND);
+        }
+        return ApiResponse::createFailureResponse("Bad hash", ApiResponse::HTTP_FORBIDDEN);
+    }
+
+    /**
      * @Route("/api/invites", methods={"GET"})
      */
-    public function getInvite(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer)
+    public function showInvites(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer)
     {
         $this->denyAccessUnlessGranted('get', 'invites');
 
@@ -136,5 +180,40 @@ class InviteUserController extends AbstractController
         }
         return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
     }
+
+    /**
+     * @Route("/api/invites/{id}/status", methods={"PUT"})
+     */
+    public function confirmInvite(int $id, Request $request, EntityManagerInterface $entityManager, Encryptor $encryptor, UserPasswordEncoderInterface $passwordEncoder, TokenManuallyGenerator $tokenManuallyGenerator)
+    {
+        $password = ($request->request->has("password"))? $request->request->get("password"): null;
+        $encryptPayload = ['id'=> $id];
+        if(is_null($password)) {
+            $encryptPayload['status'] = true;
+        }else if(mb_strlen($password) < 6){
+            return ApiResponse::createFailureResponse("Invalid password", ApiResponse::HTTP_BAD_REQUEST);
+        };
+        $hash = ($request->query->has("hash"))? $request->query->get("hash") : null;
+        if($hash === $encryptor->computedCheckSim($encryptPayload)){
+            $confirmedUser = $entityManager->getRepository(User::class)->findOneBy(["id"=>$id, "isActive" => false]);
+            if(!is_null($confirmedUser)){
+                if(($confirmedUser->getRoles() !== User::ROLE_SUPER_ADMIN) && is_null($password)){
+                    return ApiResponse::createFailureResponse('Password missing', ApiResponse::HTTP_BAD_REQUEST);
+                }
+                (!is_null($password))? $confirmedUser->setPassword($passwordEncoder->encodePassword($confirmedUser, $password)):null;
+
+                $confirmedUser->setIsActive(true);
+                $entityManager->persist($confirmedUser);
+                $entityManager->flush();
+
+                return $tokenManuallyGenerator->JWTResponseGenerate($confirmedUser);
+            }
+
+            return ApiResponse::createFailureResponse("Invite not found", ApiResponse::HTTP_NOT_FOUND);
+        }
+        return ApiResponse::createFailureResponse("Bad hash", ApiResponse::HTTP_FORBIDDEN);
+
+    }
+
 
 }

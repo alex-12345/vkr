@@ -23,7 +23,6 @@ class RefreshedTokenSubscriber implements EventSubscriberInterface
     {
         $refreshToken = $event->getData()['refresh_token'];
         $response = $event->getResponse();
-
         if($refreshToken){
             $response->headers->setCookie(
                     new Cookie(
@@ -42,8 +41,9 @@ class RefreshedTokenSubscriber implements EventSubscriberInterface
     {
         return [
           'lexik_jwt_authentication.on_authentication_success' => [
-              ['setRefreshTokenHeader']
-          ]
+              'setRefreshTokenHeader'
+          ],
+            AuthenticationSuccessEvent::class =>['setRefreshTokenHeader']
         ];
     }
 }

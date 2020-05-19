@@ -23,6 +23,7 @@ class JWTCreatedListener implements EventSubscriberInterface
      */
     public function onJWTCreated(JWTCreatedEvent $event)
     {
+
         if(!$event->getUser()->getIsActive()){
             //TODO refactor this
             throw new UserNotFoundException('is_active','false');

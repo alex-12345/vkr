@@ -52,7 +52,7 @@ class UserController extends AbstractController
         $form = $this->createForm(UserType::class);
 
         $form->submit($request->request->all())->handleRequest(($request));
-        $link = $request->get("confirmation_page");
+        $link = $request->get("link");
 
         if ($form->isSubmitted() && $form->isValid() && filter_var($link, FILTER_VALIDATE_URL)) {
             $data = $form->getData();
@@ -66,7 +66,7 @@ class UserController extends AbstractController
                 $entityManager->persist($super_admin);
                 $entityManager->flush();
 
-                $link = $linkBuilder->getInviteConfirmLink($link, $data['email']);
+                $link = $linkBuilder->getInviteConfirmLink($link, ['id' => $super_admin->getId(), 'status'=> true]);
                 $dispatcher->dispatch(new UserCreatedEvent($super_admin, $link));
 
                 return ApiResponse::createSuccessResponse(

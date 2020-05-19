@@ -11,12 +11,13 @@ class InviteVoter extends Voter
 {
     const CREATE = 'create';
     const GET = 'get';
+    const REMOVE = 'remove';
 
     const SUBJECT = 'invites';
 
     protected function supports(string $attribute, $subject)
     {
-        if (!in_array($attribute, [self::CREATE, self::GET])) {
+        if (!in_array($attribute, [self::CREATE, self::GET, self::REMOVE])) {
             return false;
         }
 
@@ -39,10 +40,17 @@ class InviteVoter extends Voter
                 return $this->canInvite($user);
             case self::GET:
                 return $this->getInvite($user);
+            case self::REMOVE:
+                return $this->removeInvite($user);
         }
     }
 
     private function canInvite(SessionUser $user)
+    {
+        return $this->getInvite($user);
+    }
+
+    private function removeInvite(SessionUser $user)
     {
         return $this->getInvite($user);
     }

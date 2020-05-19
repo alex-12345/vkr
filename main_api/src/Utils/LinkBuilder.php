@@ -13,12 +13,12 @@ class LinkBuilder
         $this->encryptor = $encryptor;
     }
 
-    public function getInviteConfirmLink($link, string $email)
+    public function getInviteConfirmLink($link, array $arguments)
     {
-        $checkSum = $this->encryptor->computedCheckSim($email);
+        $checkSum = $this->encryptor->computedCheckSim($arguments);
         $link .= (stristr($link, '?'))? "&": "?";
 
-        return $link."email=".$email."&hash=".$checkSum;
+        return $link.http_build_query($arguments)."&hash=".$checkSum;
     }
 
 }

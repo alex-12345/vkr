@@ -13,9 +13,9 @@ class Encryptor
         $this->appSecretKey = $AppSecretKey;
     }
 
-    public function computedCheckSim(string $payload)
+    public function computedCheckSim(array $payload)
     {
-        return sha1($payload.$this->appSecretKey);
+        return sha1(implode($payload,"_").$this->appSecretKey);
     }
 
 }
