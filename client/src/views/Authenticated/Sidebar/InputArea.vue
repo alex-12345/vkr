@@ -2,7 +2,8 @@
     <input 
         type="text"
         placeholder="Введите название"
-        v-on:keyup.enter="action($event.target.value)"
+        v-on:keyup.enter="action()"
+        class="reset"
     >
 </template>
 
@@ -13,13 +14,15 @@
         props: ['type', 'chatId'],
         methods: {
             ...mapActions(['changeShowChatInput', 'addChat', 'changeShowSubChatInput', 'addSubChat']),
-            action(value) {
+            action() {
                 if (this.type === 'chat') {
-                    this.addChat(value)
+                    this.addChat(event.target.value)
+                    event.target.value = ''
                     this.changeShowChatInput()
                 }
                 else if (this.type === 'subChat') {
-                    this.addSubChat({id: this.chatId - 1, name: value})
+                    this.addSubChat({id: this.chatId - 1, name: event.target.value})
+                    event.target.value = ''
                     this.changeShowSubChatInput(this.chatId - 1)
                 }
             }

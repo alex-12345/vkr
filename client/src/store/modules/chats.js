@@ -80,7 +80,6 @@ export default {
             ctx.commit('pushChat', name)
         },
         addSubChat(ctx, newSubChat) {
-            console.log('Я тут')
             ctx.commit('pushSubChat', newSubChat)
         },
         delChat(ctx, id) {
@@ -132,7 +131,7 @@ export default {
                 state.chats[newSubChat.id].thereIsSsubChats = true
             }
             state.chats[newSubChat.id].subChats.push({
-                id: state.chats[newSubChat.id].length + 1, 
+                id: state.chats[newSubChat.id].subChats.length + 1, 
                 showCross: false,
                 title: newSubChat.name,
             })
