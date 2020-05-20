@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-
 use App\Entity\User;
+use App\Events\AppSecretCheckEvent;
 use App\Events\UserCreatedEvent;
 use App\Form\InviteType;
 use App\Response\ApiResponse;
@@ -12,15 +12,15 @@ use App\Utils\Encryptor;
 use App\Utils\LinkBuilder;
 use App\Utils\TokenManuallyGenerator;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+
+// TODO maybe use sensio bundle
 
 class InviteUserController extends AbstractController
 {
@@ -28,18 +28,17 @@ class InviteUserController extends AbstractController
     /**
      * @Route("/api/invites", methods={"POST"})
      */
-    public function createInvite(Request $request, MailerInterface $mailer, LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer)
+    public function createInvite(Request $request, LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer)
     {
         $this->denyAccessUnlessGranted('create', 'invites');
 
-        $form = $this->createForm(InviteType::class);
+        $form = $this->createForm(InviteType::class, null, ['roles' => true]);
         $form->submit($request->request->all())->handleRequest(($request));
 
         if($form->isValid()){
 
             $data = $form->getData();
             $newUser = new User($data['first_name'],$data['second_name'], $data['email'], null, $data['roles']);
-
 
             $conflict_email_user = $entityManager->getRepository(User::class)->findUserByEmail($data['email']);
             if(is_null($conflict_email_user)) {
@@ -60,12 +59,13 @@ class InviteUserController extends AbstractController
 
         return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
     }
+
     /**
-     * @Route("/api/invites/{id}", methods={"PUT"})
+     * @Route("/api/invites/{id}", methods={"PUT"}, requirements={"id"="\d+"})
      */
-    public function repeatInvite(int $id, Request $request, MailerInterface $mailer, LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer)
+    public function repeatInvite(int $id, Request $request,  LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer)
     {
-        $form = $this->createForm(InviteType::class);
+        $form = $this->createForm(InviteType::class, null, ['roles' => true]);
         $form->submit($request->request->all())->handleRequest(($request));
 
         if($form->isValid()) {
@@ -97,7 +97,46 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/{id}", methods={"GET"})
+     * @Route("/api/invites/admin", methods={"PUT"})
+     */
+    public function repeatSuperAdminInvite(Request $request, LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer, UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $event = new AppSecretCheckEvent($request->get("workspace_key"));
+        $dispatcher->dispatch($event);
+        if($event->hasResponse()) return $event->getResponse();
+
+        $form = $this->createForm(InviteType::class, null, ['password'=>true]);
+        $form->submit($request->request->all())->handleRequest(($request));
+        if($form->isValid()){
+            $invitedAdmin = $entityManager->getRepository(User::class)->findSuperAdmin();
+            if(!is_null($invitedAdmin) && !$invitedAdmin->getIsActive()){
+                $data = $form->getData();
+
+                //TODO Refactor this
+                $invitedAdmin->setFirstName($data['first_name']);
+                $invitedAdmin->setSecondName($data['second_name']);
+                $invitedAdmin->setEmail($data['email']);
+                $invitedAdmin->setPassword($passwordEncoder->encodePassword($invitedAdmin, $data['password']));
+
+                $entityManager->persist($invitedAdmin);
+                $entityManager->flush();
+
+                $link = $linkBuilder->getInviteConfirmLink($data['link'],['id' => $invitedAdmin->getId()]);
+                //$dispatcher->dispatch(new UserCreatedEvent($invitedAdmin, $link));
+
+                return ApiResponse::createSuccessResponse(
+                    $serializer->normalize($invitedAdmin, null, [
+                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_PROPERTY
+                    ]));
+
+            }
+            return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
+        };
+        return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
+
+    }
+    /**
+     * @Route("/api/invites/{id<\d+>}", methods={"GET"})
      */
     public function showInvite(int $id,  EntityManagerInterface $entityManager, SerializerInterface $serializer)
     {
@@ -115,7 +154,7 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/{id}", methods={"DELETE"})
+     * @Route("/api/invites/{id<\d+>}", methods={"DELETE"})
      */
     public function removeInvite(int $id,  EntityManagerInterface $entityManager, SerializerInterface $serializer)
     {
@@ -132,22 +171,16 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/{id}/status", methods={"GET"})
+     * @Route("/api/invites/{id<\d+>}/status", methods={"GET"})
      */
     public function showInviteStatus(int $id,  Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, Encryptor $encryptor)
     {
-        $encryptPayload = ['id'=> $id];
-        if($request->query->has("admin"))
-            $encryptPayload['status'] = true;
         $hash = ($request->query->has("hash"))? $request->query->get("hash") : null;
+        $encryptPayload = ['id'=> $id] + (($request->query->has("admin"))? ['status' => true]:[]);
 
         if($hash === $encryptor->computedCheckSim($encryptPayload)) {
-            $rsm = new ResultSetMappingBuilder($entityManager);
-            $rsm->addScalarResult('is_active', 'is_active');
-            $query = $entityManager->createNativeQuery('SELECT is_active FROM user WHERE id = ? AND is_active = 0 LIMIT 0, 1', $rsm);
-            $query->setParameter(1, $id);
-            $data = $query->getOneOrNullResult();
-            if (count($data)) {
+            $data = $entityManager->getRepository(User::class)->findInviteStatus($id);
+            if (!is_null($data)) {
                 return ApiResponse::createSuccessResponse($data);
             }
             return ApiResponse::createFailureResponse("Invite not found", ApiResponse::HTTP_NOT_FOUND);
@@ -182,10 +215,11 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/{id}/status", methods={"PUT"})
+     * @Route("/api/invites/{id<\d+>}/status", methods={"PUT"})
      */
     public function confirmInvite(int $id, Request $request, EntityManagerInterface $entityManager, Encryptor $encryptor, UserPasswordEncoderInterface $passwordEncoder, TokenManuallyGenerator $tokenManuallyGenerator)
     {
+        //TODO need  refactor all this ...
         $password = ($request->request->has("password"))? $request->request->get("password"): null;
         $encryptPayload = ['id'=> $id];
         if(is_null($password)) {

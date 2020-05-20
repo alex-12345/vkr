@@ -6,7 +6,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Events\AppSecretCheckEvent;
 use App\Events\UserCreatedEvent;
-use App\Form\UserType;
+use App\Form\InviteType;
 use App\Repository\UserRepository;
 use App\Response\ApiResponse;
 use App\Utils\LinkBuilder;
@@ -49,12 +49,11 @@ class UserController extends AbstractController
         $dispatcher->dispatch($event);
         if($event->hasResponse()) return $event->getResponse();
 
-        $form = $this->createForm(UserType::class);
+        $form = $this->createForm(InviteType::class, null, ['password'=>true]);
 
         $form->submit($request->request->all())->handleRequest(($request));
-        $link = $request->get("link");
 
-        if ($form->isSubmitted() && $form->isValid() && filter_var($link, FILTER_VALIDATE_URL)) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $super_admin = $repository->findSuperAdmin();
             $conflict_email_user = $repository->findUserByEmail($data['email']);
@@ -66,7 +65,7 @@ class UserController extends AbstractController
                 $entityManager->persist($super_admin);
                 $entityManager->flush();
 
-                $link = $linkBuilder->getInviteConfirmLink($link, ['id' => $super_admin->getId(), 'status'=> true]);
+                $link = $linkBuilder->getInviteConfirmLink($data['link'], ['id' => $super_admin->getId(), 'status'=> true]);
                 $dispatcher->dispatch(new UserCreatedEvent($super_admin, $link));
 
                 return ApiResponse::createSuccessResponse(

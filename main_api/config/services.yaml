@@ -28,7 +28,7 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
-    App\EventSubscriber\RefreshedTokenSubscriber:
+    App\EventSubscriber\JWTSubscribers\RefreshedTokenSubscriber:
         arguments: ['%gesdinet_jwt_refresh_token.ttl%','%env(APP_URL)%','/api/auth/token/refresh']
 
     App\Utils\TokenManuallyGenerator:

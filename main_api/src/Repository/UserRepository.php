@@ -5,6 +5,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
@@ -83,5 +84,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $paginator = new Paginator($query, false);
     }
 
+    public function findInviteStatus(int $id) : ?array
+    {
+        $entityManager = $this->getEntityManager();
+        $rsm = new ResultSetMappingBuilder($entityManager);
+        $rsm->addScalarResult('is_active', 'is_active');
+        $query = $entityManager->createNativeQuery('SELECT is_active FROM user WHERE id = ? AND is_active = 0 LIMIT 0, 1', $rsm);
+        $query->setParameter(1, $id);
+        return $query->getOneOrNullResult();
+    }
 
 }
