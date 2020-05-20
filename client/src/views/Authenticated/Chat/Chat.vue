@@ -1,12 +1,15 @@
 <template>
     <main>
-
+        <InputTextArea />
     </main>
 </template>
 
 <script>
+    import InputTextArea from '@/views/Authenticated/Chat/InputTextArea'
     export default {
-        
+        components: {
+            InputTextArea
+        }
     }
 </script>
 

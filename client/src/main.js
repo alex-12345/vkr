@@ -4,10 +4,14 @@ import router from './router'
 import Vuelidate from 'vuelidate'
 import axios from 'axios';
 import App from './App.vue'
+import VueMaterial from 'vue-material'
+import 'vue-material/dist/vue-material.min.css'
+import 'vue-material/dist/theme/default.css'
 
 window.axios = axios
 
 Vue.use(Vuelidate)
+Vue.use(VueMaterial)
 
 Vue.config.productionTip = false
 

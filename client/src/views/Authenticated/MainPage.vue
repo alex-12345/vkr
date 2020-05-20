@@ -7,7 +7,7 @@
 
 <script>
     import Sidebar from '@/views/Authenticated/Sidebar/Sidebar'
-    import Chat from '@/views/Authenticated/Chat'
+    import Chat from '@/views/Authenticated/Chat/Chat'
     
     export default {
         components: {
