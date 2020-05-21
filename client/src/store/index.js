@@ -9,6 +9,7 @@ import dropDownMenu from './modules/dropDownMenu'
 import user from './modules/user'
 import navSidebarItems from './modules/navSidebarItems'
 import chats from './modules/chats'
+import messages from './modules/messages'
 
 Vue.use(Vuex)
 
@@ -22,6 +23,7 @@ export default new Vuex.Store({
         dropDownMenu,
         user,
         navSidebarItems,
-        chats
+        chats,
+        messages
     }
 })

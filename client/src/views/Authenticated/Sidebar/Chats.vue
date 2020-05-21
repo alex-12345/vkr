@@ -1,19 +1,20 @@
 <template>
     <div class="chats">
-        <button 
-            class="chat" 
-            v-on:click="changeShow" 
-            v-bind:class="{focus: chat.showSubChat}"
-        >
-            <img 
-                src="@/images/listIcon.png" 
-                alt="list icon" 
-                v-bind:class="{expand: chat.showSubChat}" 
+        <div class="chat" v-bind:class="{focus: chat.showSubChat}">
+            <button 
+                class="pointer" 
+                v-on:click="changeShow" 
             >
-            <div class="title">
+                <img 
+                    src="@/images/listIcon.png" 
+                    alt="list icon" 
+                    v-bind:class="{expand: chat.showSubChat}" 
+                >
+            </button>
+            <button class="title" v-on:click="showMessages">
                 {{chat.title}}
-            </div>
-        </button>
+            </button>
+        </div>
         <div class="deleteArea" v-show="chat.showCross">
             <DeleteChatButton 
                 v-bind:chatId="chat.id"
@@ -62,37 +63,37 @@
             "showCross"
         ]),
         methods: {
-            ...mapActions(['changeShowSubChats', 'changeShowCross']),
+            ...mapActions(['changeShowSubChats', 'changeShowCross', 'changeSelectedChat']),
             changeShow() {
                 this.changeShowSubChats(this.chat.id - 1)
                 this.changeShowCross(this.chat.id - 1)
             },
+            showMessages() {
+                this.changeSelectedChat({chatId: this.chat.id, subChatId: undefined})
+            }
         }
     }
 </script>
 
 <style scoped>
-    .chats {
-        width: 97%;
+    .chats, .chat, .inputArea {
         border-radius: 10px;
         background-color: inherit;
+    }
+
+    .chats {
+        width: 97%;
         float: right;
         margin-top: 10px;
     }
 
     .chat {
-        float: left;
         width: 100%;
         height: 40px;
         color: #2c3e50;
         text-align: left;
-        background-color: inherit;
-        border-radius: 10px;
-        cursor: pointer;
-        box-sizing: padding-box;
-        border: none;
-        outline: none;
         padding: 5px;
+        float: left;
     }
 
     .chat:hover {
@@ -100,8 +101,8 @@
     }
 
     .focus, .focus:hover {
-        width: 70%;
         background-color: #97f3ff;
+        width: 70%;
         border-radius: 10px 0px 0px 10px;
     }
 
@@ -113,8 +114,18 @@
     .expand {
         transform: rotate(90deg);
     }
+
+    .pointer {
+        background-color: inherit;
+        float: left;
+        cursor: pointer;
+        box-sizing: padding-box;
+        border: none;
+        outline: none;
+    }
     
     .title {
+        background-color: inherit;
         font-size: 16px;
         font-weight: bold;
         text-align: left;
@@ -124,6 +135,13 @@
         width: 70%;
         float: left;
         white-space: nowrap;
+        cursor: pointer;
+        border: none;
+        outline: none;
+    }
+
+    .focus .title {
+        width: 80%;
     }
 
     .addArea {
@@ -148,8 +166,6 @@
     .inputArea {
         width: 90%;
         height: 40px;
-        border-radius: 10px;
-        background-color: inherit;
         margin-top: 10px;
         padding-right: 10px;
         float: right;

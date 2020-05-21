@@ -1,22 +1,32 @@
 <template>
     <main>
-        <InputTextArea />
+        <OutputMessagesArea v-bind:messageArr="messageArr"/>
+        <InputMessageArea />
     </main>
 </template>
 
 <script>
-    import InputTextArea from '@/views/Authenticated/Chat/InputTextArea'
+    import OutputMessagesArea from '@/views/Authenticated/Chat/OutputMessagesArea'
+    import InputMessageArea from '@/views/Authenticated/Chat/InputMessageArea'
+
     export default {
+        props: ['messageArr'],
         components: {
-            InputTextArea
+            InputMessageArea,
+            OutputMessagesArea
+        },        
+        created() {
+            console.log('messageArr: ', this.messageArr)
         }
     }
 </script>
 
 <style scoped>
     main {
+        display: flex;
+        flex-direction: column; 
         margin-left: 300px;
         height: 100%;
-        background-color: #f5f5f6;
+        background-color: white;
     }
 </style>

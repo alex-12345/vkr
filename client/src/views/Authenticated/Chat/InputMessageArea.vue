@@ -1,25 +1,18 @@
 <template>
     <div class="inputTextArea">
         <form novalidate class="md-layout" @submit.prevent="validateUser">
-            <md-card class="md-layout-item md-size-50 md-small-size-100">
-
-                <md-card-content>
-                    <div class="md-layout md-gutter">
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('firstName')">
-                                <label for="first-name">Напишите сообщение...</label>
-                                <md-textarea name="first-name" id="first-name" autocomplete="given-name" v-model="form.firstName" :disabled="sending"></md-textarea>
-                                <span class="md-error" v-if="!$v.form.firstName.required">Сообщение обязательно</span>
-                            </md-field>
-                        </div>
-                    </div>
-                </md-card-content>
-
-                <md-card-actions>
-                    <md-button type="submit" class="md-primary" :disabled="sending">Отправить</md-button>
-                </md-card-actions>
-            </md-card>
-
+            <md-field :class="getValidationClass('firstName')">
+                <label for="first-name">Напишите сообщение...</label>
+                <md-textarea 
+                    name="first-name" 
+                    id="first-name" 
+                    autocomplete="given-name" 
+                    v-model="form.firstName" 
+                    :disabled="sending" 
+                    v-on:keyup.enter.exact="validateUser"
+                >
+                </md-textarea>
+            </md-field>
             <md-snackbar :md-active.sync="userSaved">Сообщение {{ lastUser }} отправлено!</md-snackbar>
         </form>
     </div>
@@ -65,6 +58,7 @@
             },
             saveUser () {
                 this.sending = true
+                console.log(this.form.firstName)
 
                 // Instead of this timeout, here you can call your API
                 window.setTimeout(() => {
@@ -80,11 +74,25 @@
                 if (!this.$v.$invalid) {
                     this.saveUser()
                 }
-            }
+            },
         }
     }
 </script>
 
 <style scoped>
+    .inputTextArea{
+        flex: 0 0 auto;
+    }
 
+    .md-card{
+        margin: 0px auto;
+    }
+
+    .md-layout-item{
+        padding: 0px;
+    }
+
+    .md-field {
+        margin: 16px;
+    }
 </style>

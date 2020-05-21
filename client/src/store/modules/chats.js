@@ -51,6 +51,7 @@ export default {
         show: false,
         showCross: false,
         showChatInput: false,
+        selectedChat: undefined,
     },
     getters: {
         chats: state => state.chats,
