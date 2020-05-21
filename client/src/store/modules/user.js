@@ -1,15 +1,19 @@
 export default {
     state: {
-        name: 'Иван',
-        secondName: 'Иванов',
-        email: 'johndoe@mail.com',
-        password: 'rbrbvjhf',
+        idUser: 1,
+        nameUser: 'Иван',
+        secondNameUser: 'Иванов',
+        emailUser: 'johndoe@mail.com',
+        passwordUser: 'rbrbvjhf',
+        avatarUser: 'https://placeimg.com/40/40/people/5'
     },
     getters: {
-        nameUser: state => state.name,
-        secondNameUser: state => state.secondName,
-        emailUser: state => state.email,
-        passwordUser: state => state.password,
+        idUser: state => state.idUser,
+        nameUser: state => state.nameUser,
+        secondNameUser: state => state.secondNameUser,
+        emailUser: state => state.emailUser,
+        passwordUser: state => state.passwordUser,
+        avatarUser: state => state.avatarUser,
     },
     actions: {
         changePassword(ctx, newPass) {

@@ -13,16 +13,14 @@
                 >
                 </md-textarea>
             </md-field>
-            <md-snackbar :md-active.sync="userSaved">Сообщение {{ lastUser }} отправлено!</md-snackbar>
         </form>
     </div>
 </template>
 
 <script>
     import { validationMixin } from 'vuelidate'
-    import {
-        required,
-    } from 'vuelidate/lib/validators'
+    import { required } from 'vuelidate/lib/validators'
+    import { mapGetters, mapActions } from 'vuex'
 
     export default {
         name: 'inputTextArea',
@@ -35,6 +33,12 @@
             sending: false,
             lastUser: null
         }),
+        computed: mapGetters([
+            "idUser",
+            "nameUser",
+            "secondNameUser",
+            "avatarUser"
+        ]),
         validations: {
             form: {
                 firstName: {
@@ -43,6 +47,7 @@
             }
         },
         methods: {
+            ...mapActions(['addMessages']),
             getValidationClass (fieldName) {
                 const field = this.$v.form[fieldName]
 
@@ -59,14 +64,12 @@
             saveUser () {
                 this.sending = true
                 console.log(this.form.firstName)
+                this.addMessages({idUser: this.idUser, nameUser: this.nameUser, secondNameUser: this.secondNameUser, avatarUser: this.avatarUser, body: this.form.firstName})
 
-                // Instead of this timeout, here you can call your API
-                window.setTimeout(() => {
-                    this.lastUser = `${this.form.firstName}`
-                    this.userSaved = true
-                    this.sending = false
-                    this.clearForm()
-                }, 1500)
+                this.lastUser = `${this.form.firstName}`
+                this.userSaved = true
+                this.sending = false
+                this.clearForm()
             },
             validateUser () {
                 this.$v.$touch()

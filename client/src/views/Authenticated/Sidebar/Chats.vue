@@ -63,12 +63,13 @@
             "showCross"
         ]),
         methods: {
-            ...mapActions(['changeShowSubChats', 'changeShowCross', 'changeSelectedChat']),
+            ...mapActions(['changeShowSubChats', 'changeShowCross', 'changeSelectedChat', 'changeSelectedChatId']),
             changeShow() {
                 this.changeShowSubChats(this.chat.id - 1)
                 this.changeShowCross(this.chat.id - 1)
             },
             showMessages() {
+                this.changeSelectedChatId({chatId: this.chat.id, subChatId: undefined})
                 this.changeSelectedChat({chatId: this.chat.id, subChatId: undefined})
             }
         }

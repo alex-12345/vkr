@@ -138,22 +138,52 @@ export default {
             },
         ],
         selectedChat: undefined,
+        selectedChatId: {
+            chatId: undefined,
+            subChatId: undefined,
+        },
     },
     getters: {
         messages: state => state.messages,
         selectedChat: state => state.selectedChat,
     },
     actions: {
-        addMessages(ctx, body) {
-            ctx.commit('updateMessages', body)
+        addMessages(ctx, message) {
+            ctx.commit('pushMessages', message)
         },
         changeSelectedChat(ctx, allId) {
             ctx.commit('updateSelectedChat', allId)
+        },
+        changeSelectedChatId(ctx, allId) {
+            ctx.commit('updateSelectedChatId', allId)
         }
     },
     mutations: {
-        updateMessages(state, body) {
-            console.log(state.messages, body)
+        pushMessages(state, message) {
+            let localReplay = false
+            let desiredArray = undefined
+            if (state.selectedChatId.chatId === undefined && state.selectedChatId.subChatId === undefined) {
+                console.log('Исправить')
+            }
+            else if (state.selectedChatId.chatId != undefined && state.selectedChatId.subChatId === undefined) { 
+                desiredArray = state.messages.find(item => item.chatId === state.selectedChatId.chatId)
+            }
+            else if (state.selectedChatId.chatId != undefined && state.selectedChatId.subChatId != undefined) { 
+                desiredArray = state.messages.find(item => item.chatId === state.selectedChatId.chatId && item.subchatId === state.selectedChatId.subChatId)
+            }
+            let id = state.messages.indexOf(desiredArray)
+            if (state.messages[id].messageArray.length != 0 && state.messages[id].messageArray[state.messages[id].messageArray.length - 1].userId === message.idUser) {
+                localReplay = true
+            }
+            state.messages[id].messageArray.push({
+                id: state.messages[id].messageArray.length + 1,
+                userId: message.idUser, 
+                firstName: message.nameUser, 
+                lastName: message.secondNameUser, 
+                avatar: message.avatarUser,
+                body: message.body,
+                replay: localReplay
+            })
         },
         updateSelectedChat(state, allId) {
             if (allId.chatId === undefined && allId.subChatId === undefined) {
@@ -173,6 +203,10 @@ export default {
                 }
                 else {state.selectedChat = array}
             }
+        },
+        updateSelectedChatId(state, allId) {
+            state.selectedChatId.chatId = allId.chatId
+            state.selectedChatId.subChatId = allId.subChatId
         }
     }
 }

@@ -27,9 +27,10 @@
     export default {
         props: ['subChat', 'chatId'],
         methods: {
-            ...mapActions(['changeShowSubCross', 'changeSelectedChat']),
+            ...mapActions(['changeShowSubCross', 'changeSelectedChat', 'changeSelectedChatId']),
             changeShowCross() {
                 this.changeShowSubCross({idChat: this.chatId - 1, idSubChat: this.subChat.id - 1})
+                this.changeSelectedChatId({chatId: this.chatId, subChatId: this.subChat.id})
                 this.changeSelectedChat({chatId: this.chatId, subChatId: this.subChat.id})
             },
         },
