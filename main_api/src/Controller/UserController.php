@@ -7,13 +7,19 @@ use App\Entity\User;
 use App\Events\AppSecretCheckEvent;
 use App\Events\UserCreatedEvent;
 use App\Form\InviteType;
+use App\Form\ScalarTypes\ImageUrlType;
+use App\Form\ScalarTypes\PasswordNonEncryptedType;
+use App\Form\ScalarTypes\UserDescriptionType;
 use App\Repository\UserRepository;
 use App\Response\ApiResponse;
 use App\Utils\LinkBuilder;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -79,6 +85,161 @@ class UserController extends AbstractController
         }
         return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
     }
+
+    /**
+     * @Route("/api/user/{id<\d+>}/password", methods={"PUT"})
+     * @Security("is_granted('editAccount', changedUser)")
+     */
+    public function changeUserPassword(Request $request, User $changedUser, UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $form = $this->createForm(PasswordNonEncryptedType::class, $changedUser);
+
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
+
+            $newPassword = $changedUser->getPassword();
+            $changedUser->setPassword($passwordEncoder->encodePassword($changedUser, $newPassword));
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($changedUser);
+            $em->flush();
+
+            return ApiResponse::createSuccessResponse(
+                ['password' => $newPassword]
+            );
+        };
+
+        throw new BadRequestHttpException("Parameter 'password' not valid!") ;
+    }
+
+    /**
+     * @Route("/api/users/{id<\d+>}/main_photo", methods={"PUT"})
+     * @Security("is_granted('editAccount', changedUser)")
+     */
+    public function changeUserMainPhoto(Request $request, User $changedUser)
+    {
+        $form = $this->createForm(ImageUrlType::class, $changedUser);
+
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($changedUser);
+            $em->flush();
+
+            return ApiResponse::createSuccessResponse(
+                ['main_photo' => $changedUser->getMainPhoto()]
+            );
+        };
+
+        throw new BadRequestHttpException("Parameter 'main_photo' not valid!") ;
+
+    }
+    /**
+     * @Route("/api/users/{id<\d+>}/description", methods={"PUT"})
+     * @Security("is_granted('editAccount', changedUser)")
+     */
+    public function changeUserDescription(Request $request, User $changedUser)
+    {
+        $form = $this->createForm(UserDescriptionType::class, $changedUser);
+
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($changedUser);
+            $em->flush();
+
+            return ApiResponse::createSuccessResponse(
+                ['description' => $changedUser->getDescription()]
+            );
+        }
+        //TODO переопредилить стадартный вывод ошибок
+        throw new BadRequestHttpException("Parameter 'description' not valid!") ;
+    }
+
+
+    /**
+     * @Route("/api/users/password/recovery", methods={"POST"})
+     */
+    public function createRecoveryPasswordLink()
+    {
+        return new Response();
+    }
+    /**
+     * @Route("/api/users/password/recovery/status", methods={"GET"})
+     */
+    public function showRecoveryLinkStatus()
+    {
+        return new Response();
+    }
+
+    /**
+     * @Route("/api/users/password", methods={"PUT"})
+     */
+    public function changeUserPasswordViaLink()
+    {
+        //перезаписать в сущность old password и туда же запишем туда дату выдачи токена и дату смены пароля
+        //перезаписать пароль
+        return new Response();
+    }
+
+
+    /**
+     * @Route("/api/users/{id<\d+>}/email", methods={"POST"})
+     */
+    public function createNewUserEmail()
+    {
+        //add confirm
+        return new Response();
+    }
+    /**
+     * @Route("/api/users/{id<\d+>}/email", methods={"PUT"})
+     */
+    public function changeUserEmail()
+    {
+        //add confirm
+        return new Response();
+    }
+
+
+    /**
+     * @Route("/api/users/{id<\d+>}", methods={"GET"})
+     */
+    public function showUser()
+    {
+        return new Response();
+    }
+
+    /**
+     * @Route("/api/users", methods={"GET"})
+     */
+    public function showUsers()
+    {
+        return new Response();
+    }
+
+    /**
+     * @Route("/api/user/{id<\d+>}/roles", methods={"PUT"})
+     */
+    public function changeUserRoles()
+    {
+
+        return new Response();
+    }
+    /**
+     * @Route("/api/users/{id<\d+>}/ban", methods={"POST"})
+     */
+    public function createUserBan()
+    {
+        return new Response();
+    }
+
+    /**
+     * @Route("/api/users/{id<\d+>}/ban", methods={"DELETE"})
+     */
+    public function removeUserBan()
+    {
+        return new Response();
+    }
+
 
 
 }
