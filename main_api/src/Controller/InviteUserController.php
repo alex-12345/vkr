@@ -24,7 +24,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class InviteUserController extends AbstractController
 {
-    const SKIPPED_PROPERTY =  ['password','salt','username'];
+    const SKIPPED_USER_PROPERTY =  ['password','salt','username', 'newEmail'];
     /**
      * @Route("/api/invites", methods={"POST"})
      */
@@ -51,7 +51,7 @@ class InviteUserController extends AbstractController
 
                 return ApiResponse::createSuccessResponse(
                     $serializer->normalize($newUser, null, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_PROPERTY
+                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
                     ]));
             }
             return ApiResponse::createFailureResponse("User with that 'email' already exist!", ApiResponse::HTTP_CONFLICT);
@@ -88,7 +88,7 @@ class InviteUserController extends AbstractController
 
                 return ApiResponse::createSuccessResponse(
                     $serializer->normalize($invitedUser, null, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_PROPERTY
+                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
                     ]));
             }
             return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
@@ -126,7 +126,7 @@ class InviteUserController extends AbstractController
 
                 return ApiResponse::createSuccessResponse(
                     $serializer->normalize($invitedAdmin, null, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_PROPERTY
+                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
                     ]));
 
             }
@@ -147,7 +147,7 @@ class InviteUserController extends AbstractController
         {
             return ApiResponse::createSuccessResponse(
                 $serializer->normalize($invitedUser, null, [
-                    AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_PROPERTY
+                    AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
                 ]));
         }
         return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
@@ -206,7 +206,7 @@ class InviteUserController extends AbstractController
             foreach ($paginator as $invite)
             {
                 $invites[] = $serializer->normalize($invite, null,[
-                    AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_PROPERTY
+                    AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
                 ]);
             }
             return ApiResponse::createSuccessResponse($invites, ['count'=> $invitesAmount]);

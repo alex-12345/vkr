@@ -5,21 +5,29 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Events\AppSecretCheckEvent;
+use App\Events\UserChangesEmailEvent;
 use App\Events\UserCreatedEvent;
 use App\Form\InviteType;
 use App\Form\ScalarTypes\ImageUrlType;
+use App\Form\User\ConfirmEmailType;
+use App\Form\User\NewEmailTypes;
 use App\Form\ScalarTypes\PasswordNonEncryptedType;
 use App\Form\ScalarTypes\UserDescriptionType;
 use App\Repository\UserRepository;
 use App\Response\ApiResponse;
+use App\Utils\Encryptor;
 use App\Utils\LinkBuilder;
+use App\Utils\TokenManuallyGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -27,6 +35,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class UserController extends AbstractController
 {
+    const SKIPPED_USER_PROPERTY =  ['password','salt','username', 'newEmail'];
     /**
      * @Route("/api/users/admin", methods={"GET"})
      */
@@ -38,10 +47,10 @@ class UserController extends AbstractController
 
         $admin = $repository->findSuperAdmin();
         if(is_null($admin)){
-            return ApiResponse::createFailureResponse('User with role "SUPER_ADMIN" not found', ApiResponse::HTTP_NOT_FOUND);
+            throw new NotFoundHttpException('User with role "SUPER_ADMIN" not found');
         }
         $response_data = $serializer->normalize($admin, null, [AbstractNormalizer::IGNORED_ATTRIBUTES =>
-            ['password','salt','username']]);
+            self::SKIPPED_USER_PROPERTY]);
         return ApiResponse::createSuccessResponse($response_data);
     }
 
@@ -79,28 +88,26 @@ class UserController extends AbstractController
                         AbstractNormalizer::IGNORED_ATTRIBUTES => ['password','salt','username']
                     ]));
             }
-
-            return ApiResponse::createFailureResponse("SuperAdmin or user with that 'email' already exist!", ApiResponse::HTTP_CONFLICT);
-
+            throw new ConflictHttpException("SuperAdmin or user with that 'email' already exist!");
         }
-        return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
+        throw new BadRequestHttpException("Bad content!");
     }
 
     /**
      * @Route("/api/user/{id<\d+>}/password", methods={"PUT"})
-     * @Security("is_granted('editAccount', changedUser)")
+     * @Security("is_granted('editAccount', changingUser)")
      */
-    public function changeUserPassword(Request $request, User $changedUser, UserPasswordEncoderInterface $passwordEncoder)
+    public function changeUserPassword(Request $request, User $changingUser, UserPasswordEncoderInterface $passwordEncoder)
     {
-        $form = $this->createForm(PasswordNonEncryptedType::class, $changedUser);
+        $form = $this->createForm(PasswordNonEncryptedType::class, $changingUser);
 
         if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
 
-            $newPassword = $changedUser->getPassword();
-            $changedUser->setPassword($passwordEncoder->encodePassword($changedUser, $newPassword));
+            $newPassword = $changingUser->getPassword();
+            $changingUser->setPassword($passwordEncoder->encodePassword($changingUser, $newPassword));
 
             $em = $this->getDoctrine()->getManager();
-            $em->persist($changedUser);
+            $em->persist($changingUser);
             $em->flush();
 
             return ApiResponse::createSuccessResponse(
@@ -113,20 +120,20 @@ class UserController extends AbstractController
 
     /**
      * @Route("/api/users/{id<\d+>}/main_photo", methods={"PUT"})
-     * @Security("is_granted('editAccount', changedUser)")
+     * @Security("is_granted('editAccount', changingUser)")
      */
-    public function changeUserMainPhoto(Request $request, User $changedUser)
+    public function changeUserMainPhoto(Request $request, User $changingUser)
     {
-        $form = $this->createForm(ImageUrlType::class, $changedUser);
+        $form = $this->createForm(ImageUrlType::class, $changingUser);
 
         if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
 
             $em = $this->getDoctrine()->getManager();
-            $em->persist($changedUser);
+            $em->persist($changingUser);
             $em->flush();
 
             return ApiResponse::createSuccessResponse(
-                ['main_photo' => $changedUser->getMainPhoto()]
+                ['main_photo' => $changingUser->getMainPhoto()]
             );
         };
 
@@ -135,77 +142,111 @@ class UserController extends AbstractController
     }
     /**
      * @Route("/api/users/{id<\d+>}/description", methods={"PUT"})
-     * @Security("is_granted('editAccount', changedUser)")
+     * @Security("is_granted('editAccount', changingUser)")
      */
-    public function changeUserDescription(Request $request, User $changedUser)
+    public function changeUserDescription(Request $request, User $changingUser)
     {
-        $form = $this->createForm(UserDescriptionType::class, $changedUser);
+        $form = $this->createForm(UserDescriptionType::class, $changingUser);
 
         if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
 
             $em = $this->getDoctrine()->getManager();
-            $em->persist($changedUser);
+            $em->persist($changingUser);
             $em->flush();
 
             return ApiResponse::createSuccessResponse(
-                ['description' => $changedUser->getDescription()]
+                ['description' => $changingUser->getDescription()]
             );
         }
-        //TODO переопредилить стадартный вывод ошибок
         throw new BadRequestHttpException("Parameter 'description' not valid!") ;
     }
 
 
     /**
-     * @Route("/api/users/password/recovery", methods={"POST"})
-     */
-    public function createRecoveryPasswordLink()
-    {
-        return new Response();
-    }
-    /**
-     * @Route("/api/users/password/recovery/status", methods={"GET"})
-     */
-    public function showRecoveryLinkStatus()
-    {
-        return new Response();
-    }
-
-    /**
-     * @Route("/api/users/password", methods={"PUT"})
-     */
-    public function changeUserPasswordViaLink()
-    {
-        //перезаписать в сущность old password и туда же запишем туда дату выдачи токена и дату смены пароля
-        //перезаписать пароль
-        return new Response();
-    }
-
-
-    /**
      * @Route("/api/users/{id<\d+>}/email", methods={"POST"})
+     * @Security("is_granted('editAccount', changingUser)")
      */
-    public function createNewUserEmail()
+    public function createNewUserEmail(Request $request, User $changingUser, LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher)
     {
-        //add confirm
-        return new Response();
+        $form = $this->createForm(NewEmailTypes::class);
+
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()) {
+            $newEmail = $form->getData()['new_email'];
+            if($changingUser->getEmail() === $newEmail) throw new ConflictHttpException("This user already have this email!");
+
+            $link = $form->getData()['link'];
+            $changingUser->setNewEmail($newEmail);
+            $em = $this->getDoctrine()->getManager();
+
+            $conflictUser = $em->getRepository(User::class)->findUserByEmail($newEmail);
+            if(!is_null($conflictUser)){
+                if($conflictUser->getisActive()){
+                    throw new ConflictHttpException('User with this email already exist and confirmed');
+                }
+                else{
+                    $em->remove($conflictUser);
+                }
+            }
+            $em->persist($changingUser);
+            $em->flush();
+
+            $link = $linkBuilder->getInviteConfirmLink($link, ['id' => $changingUser->getId(), 'subject'=> 'switchEmail']);
+            $dispatcher->dispatch(new UserChangesEmailEvent($changingUser, $link));
+
+            return ApiResponse::createSuccessResponse(['new_email' => $newEmail]);
+
+        }
+        throw new BadRequestHttpException("Bad content!") ;
     }
     /**
      * @Route("/api/users/{id<\d+>}/email", methods={"PUT"})
      */
-    public function changeUserEmail()
+    public function changeUserEmail(User $changingUser, Request $request, Encryptor $encryptor, TokenManuallyGenerator $tokenManuallyGenerator)
     {
-        //add confirm
-        return new Response();
+        $form = $this->createForm(ConfirmEmailType::class);
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()) {
+            $hash = $form->getData()['hash'];
+            $computedCheckSum = $encryptor->computedCheckSim(['id' => $changingUser->getId(), 'subject'=> 'switchEmail']);
+            $newEmail = $changingUser->getNewEmail();
+            if($hash ===  $computedCheckSum && !is_null($newEmail))
+            {
+                $em = $this->getDoctrine()->getManager();
+                $conflictUser = $em->getRepository(User::class)->findUserByEmail($newEmail);
+                if(!is_null($conflictUser)){
+                    if($conflictUser->getisActive()){
+                        throw new ConflictHttpException('User with this email already exist and confirmed');
+                    }
+                    else{
+                        $em->remove($conflictUser);
+                    }
+                }
+                $changingUser->setEmail($newEmail);
+                $changingUser->setNewEmail('');
+
+                $em->persist($changingUser);
+                $em->flush();
+
+                return $tokenManuallyGenerator->JWTResponseGenerate($changingUser);
+            };
+            throw new NotFoundHttpException('User with this parameters not found');
+        }
+        throw new BadRequestHttpException('Bad content!');
     }
 
 
     /**
      * @Route("/api/users/{id<\d+>}", methods={"GET"})
+     * @Entity(name="shownUser", expr="repository.findActiveUser(id)")
      */
-    public function showUser()
+    public function showUser(User $shownUser, SerializerInterface $serializer)
     {
-        return new Response();
+        return ApiResponse::createSuccessResponse(
+            $serializer->normalize(
+                $shownUser,
+                null,
+                [AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY]
+            )
+        );
     }
 
     /**
@@ -213,11 +254,13 @@ class UserController extends AbstractController
      */
     public function showUsers()
     {
+        //TODO implement this method\maybe via search function
         return new Response();
     }
 
     /**
      * @Route("/api/user/{id<\d+>}/roles", methods={"PUT"})
+     * Security("is_granted('changeRoles', changingUser)")
      */
     public function changeUserRoles()
     {
@@ -229,6 +272,7 @@ class UserController extends AbstractController
      */
     public function createUserBan()
     {
+        //todo need implements this method
         return new Response();
     }
 
@@ -237,6 +281,7 @@ class UserController extends AbstractController
      */
     public function removeUserBan()
     {
+        //todo need implements this method
         return new Response();
     }
 

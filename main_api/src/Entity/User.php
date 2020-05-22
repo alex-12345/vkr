@@ -36,7 +36,7 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string", nullable=true)
      */
-    private string $password;
+    private ?string $password;
 
     /**
      * @ORM\Column(type="boolean")
@@ -56,7 +56,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private string $main_photo;
+    private ?string $main_photo;
 
     /**
      * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
@@ -71,7 +71,12 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $description;
+    private ?string $description;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $new_email;
 
     public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = self::ROLE_USER, bool $isActive = false)
     {
@@ -238,6 +243,18 @@ class User implements UserInterface
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getNewEmail(): ?string
+    {
+        return $this->new_email;
+    }
+
+    public function setNewEmail(?string $new_email): self
+    {
+        $this->new_email = $new_email;
 
         return $this;
     }

@@ -6,6 +6,7 @@ namespace App\EventSubscriber\JWTSubscribers;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\UserNotFoundException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class JWTCreatedListener implements EventSubscriberInterface
 {
@@ -17,11 +18,11 @@ class JWTCreatedListener implements EventSubscriberInterface
      */
     public function onJWTCreated(JWTCreatedEvent $event)
     {
-
         if(!$event->getUser()->getIsActive()){
-            //TODO refactor this
-            throw new UserNotFoundException('is_active','false');
+            throw new AccessDeniedHttpException('Email confirmation needed!');
         }
+
+        //TODO check ban
     }
 
     public static function getSubscribedEvents()

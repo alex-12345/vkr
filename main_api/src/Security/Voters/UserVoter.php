@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 class UserVoter extends Voter
 {
     const EDIT = 'editAccount';
+   // const EDIT_ROLES = 'editRoles';
 
     protected function supports(string $attribute, $subject)
     {

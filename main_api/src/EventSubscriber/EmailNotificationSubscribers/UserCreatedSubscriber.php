@@ -1,26 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace App\EventSubscriber;
+namespace App\EventSubscriber\EmailNotificationSubscribers;
 
 
 use App\Events\UserCreatedEvent;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Mailer\MailerInterface;
 
-class UserCreatedSubscriber implements EventSubscriberInterface
+class UserCreatedSubscriber extends AbstractEmailNotificationSubscriber implements EventSubscriberInterface
 {
-    protected MailerInterface $mailer;
-    protected string $sender;
-    protected string $workspace_name;
-
-    public function __construct(MailerInterface $mailer, string $sender, string $workspace_name)
-    {
-        $this->mailer = $mailer;
-        $this->sender = $sender;
-        $this->workspace_name = $workspace_name;
-    }
 
     public function onUserCreated(UserCreatedEvent $event){
 
@@ -31,7 +20,7 @@ class UserCreatedSubscriber implements EventSubscriberInterface
             ->from($this->sender)
             ->to($email)
             ->subject('Приглашение в рабочую площадку!')
-            ->htmlTemplate('emails/signup.html.twig')
+            ->htmlTemplate('emails/SignUp.html.twig')
             ->context([
                 'first_name' => $user->getFirstName(),
                 'second_name' => $user->getSecondName(),
