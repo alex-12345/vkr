@@ -4,249 +4,253 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Events\AppSecretCheckEvent;
 use App\Events\UserCreatedEvent;
 use App\Form\InviteType;
+use App\Form\User\ConfirmEmailType;
 use App\Response\ApiResponse;
+use App\Serializer\Normalizer\UserNormalizer;
+use App\Utils\Checker;
 use App\Utils\Encryptor;
 use App\Utils\LinkBuilder;
 use App\Utils\TokenManuallyGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
 
-// TODO maybe use sensio bundle
 
 class InviteUserController extends AbstractController
 {
-    const SKIPPED_USER_PROPERTY =  ['password','salt','username', 'newEmail'];
+
     /**
      * @Route("/api/invites", methods={"POST"})
+     * @Security("is_granted('create', 'invites')")
      */
-    public function createInvite(Request $request, LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer)
+    public function createInvite(Request $request, LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher, UserNormalizer $normalizer)
     {
-        $this->denyAccessUnlessGranted('create', 'invites');
+        $newUser = new User();
+        $form = $this->createForm(InviteType::class, $newUser, ['roles' => true]);
 
-        $form = $this->createForm(InviteType::class, null, ['roles' => true]);
-        $form->submit($request->request->all())->handleRequest(($request));
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
 
-        if($form->isValid()){
+            $em = $this->getDoctrine()->getManager();
+            $conflict_email_user = $em->getRepository(User::class)->findUserByEmail($newUser->getEmail());
 
-            $data = $form->getData();
-            $newUser = new User($data['first_name'],$data['second_name'], $data['email'], null, $data['roles']);
-
-            $conflict_email_user = $entityManager->getRepository(User::class)->findUserByEmail($data['email']);
             if(is_null($conflict_email_user)) {
+                $em->persist($newUser);
+                $em->flush();
 
-                $entityManager->persist($newUser);
-                $entityManager->flush();
-
-                $link = $linkBuilder->getInviteConfirmLink($data['link'],['id' =>$newUser->getId()]);
+                $link = $linkBuilder->getInviteConfirmLink($form->get('link')->getData(), ['id' => $newUser->getId()]);
                 $dispatcher->dispatch(new UserCreatedEvent($newUser,$link));
 
                 return ApiResponse::createSuccessResponse(
-                    $serializer->normalize($newUser, null, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
-                    ]));
+                    $normalizer->normalize($newUser, null, ['is_active', 'registration_date'])
+                );
             }
-            return ApiResponse::createFailureResponse("User with that 'email' already exist!", ApiResponse::HTTP_CONFLICT);
+            throw new ConflictHttpException("User with that 'email' already exist!");
         };
-
-        return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
+        throw new BadRequestHttpException("Bad content");
     }
 
     /**
-     * @Route("/api/invites/{id}", methods={"PUT"}, requirements={"id"="\d+"})
+     * @Route("/api/invites/admin", methods={"POST"})
+     * @Entity(name="admin", expr="repository.findSuperAdmin()")
      */
-    public function repeatInvite(int $id, Request $request,  LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer)
+    public function createAdmin(?User $admin, Request $request, Checker $checker, LinkBuilder $linkBuilder, UserNormalizer $normalizer,  UserPasswordEncoderInterface $passwordEncoder, EventDispatcherInterface $dispatcher)
     {
-        $form = $this->createForm(InviteType::class, null, ['roles' => true]);
+        if(!is_null($admin)) throw new ConflictHttpException("SuperAdmin already exist!");
+
+        $checker->checkAppSecret($request->get("workspace_key"));
+
+        $superAdmin = new User();
+        $form = $this->createForm(InviteType::class, $superAdmin, ['password'=>true]);
+
+        if ($form->submit($request->request->all())->handleRequest(($request))->isValid()) {
+
+            $conflict_email_user = $this->getDoctrine()->getRepository(User::class)->findUserByEmail($superAdmin->getEmail());
+
+            if(is_null($conflict_email_user)){
+
+                $admin->setPassword($passwordEncoder->encodePassword($admin, $form->get('password')->getData()));
+
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($admin);
+                $em->flush();
+
+                $link = $linkBuilder->getInviteConfirmLink($form->get('link')->getData(), ['id' => $admin->getId(), 'status'=> true]);
+                $dispatcher->dispatch(new UserCreatedEvent($admin, $link));
+
+                return ApiResponse::createSuccessResponse($normalizer->normalize($admin, null, ['is_active', 'registration_date']));
+            }
+            throw new ConflictHttpException("User with that 'email' already exist!");
+        }
+        throw new BadRequestHttpException("Bad content!");
+    }
+
+    /**
+     * @Route("/api/invites/{id<\d+>}", methods={"PUT"}, requirements={"id"="\d+"})
+     * @Security("is_granted('create', 'invites')")
+     * @Entity(name="invitedUser", expr="repository.findInvite(id)")
+     */
+    public function repeatInvite(?User $invitedUser, Request $request,  LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher, UserNormalizer $normalizer)
+    {
+        if(is_null($invitedUser)) throw new NotFoundHttpException('This invite was not found!');
+
+        $form = $this->createForm(InviteType::class, $invitedUser, ['roles' => true]);
         $form->submit($request->request->all())->handleRequest(($request));
 
         if($form->isValid()) {
-            $this->denyAccessUnlessGranted('create', 'invites');
-            $invitedUser = $entityManager->getRepository(User::class)->find($id);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($invitedUser);
+            $em->flush();
 
-            if($invitedUser instanceof User && !$invitedUser->getIsActive() && $invitedUser->getRoles() !== User::ROLE_SUPER_ADMIN) {
-                $data = $form->getData();
-                //Todo refactor this
-                $invitedUser->setFirstName($data['first_name']);
-                $invitedUser->setSecondName($data['second_name']);
-                $invitedUser->setEmail($data['email']);
-                $invitedUser->setRoles($data['roles']);
+            $link = $linkBuilder->getInviteConfirmLink($form->get('link')->getData(), ['id' => $invitedUser->getId()]);
+            $dispatcher->dispatch(new UserCreatedEvent($invitedUser, $link));
+            return ApiResponse::createSuccessResponse(
+                $normalizer->normalize($invitedUser, null, ['is_active', 'registration_date'])
+            );
 
-                $entityManager->persist($invitedUser);
-                $entityManager->flush();
-
-                $link = $linkBuilder->getInviteConfirmLink($data['link'], ['id' => $invitedUser->getId()]);
-                $dispatcher->dispatch(new UserCreatedEvent($invitedUser,$link));
-
-                return ApiResponse::createSuccessResponse(
-                    $serializer->normalize($invitedUser, null, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
-                    ]));
-            }
-            return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
         }
-        return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
+        throw new BadRequestHttpException('Bad content!');
     }
 
     /**
      * @Route("/api/invites/admin", methods={"PUT"})
+     * @Entity(name="invitedAdmin", expr="repository.findInviteAdmin()")
      */
-    public function repeatSuperAdminInvite(Request $request, LinkBuilder $linkBuilder, EntityManagerInterface $entityManager, EventDispatcherInterface $dispatcher, SerializerInterface $serializer, UserPasswordEncoderInterface $passwordEncoder)
+    public function repeatSuperAdminInvite(?User $invitedAdmin, Request $request, Checker $checker, LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher, UserNormalizer $normalizer, UserPasswordEncoderInterface $passwordEncoder)
     {
-        $event = new AppSecretCheckEvent($request->get("workspace_key"));
-        $dispatcher->dispatch($event);
-        if($event->hasResponse()) return $event->getResponse();
+        $checker->checkAppSecret($request->get("workspace_key"));
+        if(is_null($invitedAdmin)) throw new NotFoundHttpException('Invite not found!');
 
-        $form = $this->createForm(InviteType::class, null, ['password'=>true]);
+        $form = $this->createForm(InviteType::class, $invitedAdmin, ['password'=>true]);
         $form->submit($request->request->all())->handleRequest(($request));
-        if($form->isValid()){
-            $invitedAdmin = $entityManager->getRepository(User::class)->findSuperAdmin();
-            if(!is_null($invitedAdmin) && !$invitedAdmin->getIsActive()){
-                $data = $form->getData();
 
-                //TODO Refactor this
-                $invitedAdmin->setFirstName($data['first_name']);
-                $invitedAdmin->setSecondName($data['second_name']);
-                $invitedAdmin->setEmail($data['email']);
-                $invitedAdmin->setPassword($passwordEncoder->encodePassword($invitedAdmin, $data['password']));
+        if($form->isValid()) {
+            $invitedAdmin->setPassword($passwordEncoder->encodePassword($invitedAdmin, $form->get('password')->getData()));
 
-                $entityManager->persist($invitedAdmin);
-                $entityManager->flush();
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($invitedAdmin);
+            $em->flush();
 
-                $link = $linkBuilder->getInviteConfirmLink($data['link'],['id' => $invitedAdmin->getId()]);
-                //$dispatcher->dispatch(new UserCreatedEvent($invitedAdmin, $link));
+            $link = $linkBuilder->getInviteConfirmLink($form->get('link')->getData(), ['id' => $invitedAdmin->getId()]);
+            $dispatcher->dispatch(new UserCreatedEvent($invitedAdmin, $link));
+            return ApiResponse::createSuccessResponse(
+                $normalizer->normalize($invitedAdmin, null, ['is_active', 'registration_date'])
+            );
 
-                return ApiResponse::createSuccessResponse(
-                    $serializer->normalize($invitedAdmin, null, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
-                    ]));
-
-            }
-            return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
-        };
-        return ApiResponse::createFailureResponse("Bad content", ApiResponse::HTTP_BAD_REQUEST);
-
+        }
+        throw new BadRequestHttpException('Bad content!');
     }
+
     /**
      * @Route("/api/invites/{id<\d+>}", methods={"GET"})
+     * @Security("is_granted('get', 'invites')")
+     * @Entity(name="shownInvite", expr="repository.findInvite(id)")
      */
-    public function showInvite(int $id,  EntityManagerInterface $entityManager, SerializerInterface $serializer)
+    public function showInvite(?User $shownInvite, UserNormalizer $normalizer)
     {
-        $this->denyAccessUnlessGranted('get', 'invites');
+        if(is_null($shownInvite)) throw new NotFoundHttpException('Invite not found!');
 
-        $invitedUser = $entityManager->getRepository(User::class)->findOneBy(["id"=>$id, "isActive" => false]);
-        if($invitedUser instanceof User)
-        {
-            return ApiResponse::createSuccessResponse(
-                $serializer->normalize($invitedUser, null, [
-                    AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
-                ]));
-        }
-        return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
+        return ApiResponse::createSuccessResponse(
+            $normalizer->normalize($shownInvite, null, ['is_active', 'registration_date'])
+        );
     }
 
     /**
      * @Route("/api/invites/{id<\d+>}", methods={"DELETE"})
+     * @Security("is_granted('create', 'invites')")
+     * @Entity(name="removedInvite", expr="repository.findInvite(id)")
      */
-    public function removeInvite(int $id,  EntityManagerInterface $entityManager, SerializerInterface $serializer)
+    public function removeInvite(?User $removedInvite, UserNormalizer $normalizer)
     {
-        $this->denyAccessUnlessGranted('remove', 'invites');
+        if(is_null($removedInvite)) throw new NotFoundHttpException('Invite not found!');
 
-        $invitedUser = $entityManager->getRepository(User::class)->findOneBy(["id"=>$id, "isActive" => false]);
-        if(!is_null($invitedUser))
-        {
-            $entityManager->remove($invitedUser);
-            $entityManager->flush();
-            return ApiResponse::createSuccessResponse(null);
-        }
-        return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($removedInvite);
+        $em->flush();
+
+        return ApiResponse::createSuccessResponse(null);
+
     }
 
     /**
      * @Route("/api/invites/{id<\d+>}/status", methods={"GET"})
      */
-    public function showInviteStatus(int $id,  Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, Encryptor $encryptor)
+    public function showInviteStatus(int $id,  Request $request, Encryptor $encryptor)
     {
         $hash = ($request->query->has("hash"))? $request->query->get("hash") : null;
         $encryptPayload = ['id'=> $id] + (($request->query->has("admin"))? ['status' => true]:[]);
 
         if($hash === $encryptor->computedCheckSim($encryptPayload)) {
-            $data = $entityManager->getRepository(User::class)->findInviteStatus($id);
+            //TODO maybe refactor repo.findInviteStatus
+            $data = $this->getDoctrine()->getRepository(User::class)->findInviteStatus($id);
             if (!is_null($data)) {
                 return ApiResponse::createSuccessResponse($data);
             }
-            return ApiResponse::createFailureResponse("Invite not found", ApiResponse::HTTP_NOT_FOUND);
+            throw new NotFoundHttpException("Invite not found");
         }
-        return ApiResponse::createFailureResponse("Bad hash", ApiResponse::HTTP_FORBIDDEN);
+        throw new AccessDeniedHttpException("Bad hash");
     }
 
     /**
      * @Route("/api/invites", methods={"GET"})
+     * @Security("is_granted('get', 'invites')")
      */
-    public function showInvites(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer)
+    public function showInvites(Request $request, UserNormalizer $normalizer)
     {
-        $this->denyAccessUnlessGranted('get', 'invites');
-
         $param = $request->query->get('page');
         $p_number = (isset($param['number']) && $param['number'] > 0) ? (int) $param['number'] : 1;
         $p_size = (isset($param['size']) && $param['size'] > 0) ? (int) $param['size'] : 10;
 
-        $paginator = $entityManager->getRepository(User::class)->findInvites($p_number, $p_size);
+        $paginator = $this->getDoctrine()->getRepository(User::class)->findInvites($p_number, $p_size);
         $invitesAmount = count($paginator);
         if($invitesAmount){
             $invites = [];
             foreach ($paginator as $invite)
             {
-                $invites[] = $serializer->normalize($invite, null,[
-                    AbstractNormalizer::IGNORED_ATTRIBUTES => self::SKIPPED_USER_PROPERTY
-                ]);
+                $invites[] = $normalizer->normalize($invite, null, ['is_active', 'registration_date']);
             }
             return ApiResponse::createSuccessResponse($invites, ['count'=> $invitesAmount]);
         }
-        return ApiResponse::createFailureResponse("Invite not found!", ApiResponse::HTTP_NOT_FOUND);
+        throw new NotFoundHttpException('Invite not found!');
     }
 
     /**
      * @Route("/api/invites/{id<\d+>}/status", methods={"PUT"})
+     * @Entity(name="verifiedInvite", expr="repository.findInvite(id)")
      */
-    public function confirmInvite(int $id, Request $request, EntityManagerInterface $entityManager, Encryptor $encryptor, UserPasswordEncoderInterface $passwordEncoder, TokenManuallyGenerator $tokenManuallyGenerator)
+    public function confirmInvite(?User $verifiedUser, Request $request, EntityManagerInterface $entityManager, Encryptor $encryptor, UserPasswordEncoderInterface $passwordEncoder, TokenManuallyGenerator $tokenManuallyGenerator)
     {
-        //TODO need  refactor all this ...
-        $password = ($request->request->has("password"))? $request->request->get("password"): null;
-        $encryptPayload = ['id'=> $id];
-        if(is_null($password)) {
-            $encryptPayload['status'] = true;
-        }else if(mb_strlen($password) < 6){
-            return ApiResponse::createFailureResponse("Invalid password", ApiResponse::HTTP_BAD_REQUEST);
-        };
-        $hash = ($request->query->has("hash"))? $request->query->get("hash") : null;
-        if($hash === $encryptor->computedCheckSim($encryptPayload)){
-            $confirmedUser = $entityManager->getRepository(User::class)->findOneBy(["id"=>$id, "isActive" => false]);
-            if(!is_null($confirmedUser)){
-                if(($confirmedUser->getRoles() !== User::ROLE_SUPER_ADMIN) && is_null($password)){
-                    return ApiResponse::createFailureResponse('Password missing', ApiResponse::HTTP_BAD_REQUEST);
-                }
-                (!is_null($password))? $confirmedUser->setPassword($passwordEncoder->encodePassword($confirmedUser, $password)):null;
+        if(is_null($verifiedUser)) throw new NotFoundHttpException('Invite not found!');
 
-                $confirmedUser->setIsActive(true);
-                $entityManager->persist($confirmedUser);
-                $entityManager->flush();
+        $isAdmin = $verifiedUser->getRoles() === User::ROLE_SUPER_ADMIN;
 
-                return $tokenManuallyGenerator->JWTResponseGenerate($confirmedUser);
-            }
+        $form = $this->createForm(ConfirmEmailType::class, null, ['password'=> !$isAdmin]);
+        if($form->submit($request->request->all())->handleRequest(($request))->isValid()) {
+            $hash = $form->getData()['hash'];
+            if($hash !== $encryptor->computedCheckSim(['id'=> $verifiedUser->getId()] + ($isAdmin)? []: ['status'=>true]))
+                throw new AccessDeniedHttpException("Bad hash");
 
-            return ApiResponse::createFailureResponse("Invite not found", ApiResponse::HTTP_NOT_FOUND);
+            //TODO maybe check conflict
+            ($isAdmin)?$verifiedUser->setPassword($passwordEncoder->encodePassword($verifiedUser, $form->getData()['password'])):null;
+            $verifiedUser->setIsActive(true);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($verifiedUser);
+            $em->flush();
+
+            return $tokenManuallyGenerator->JWTResponseGenerate($verifiedUser);
         }
-        return ApiResponse::createFailureResponse("Bad hash", ApiResponse::HTTP_FORBIDDEN);
-
+        throw new BadRequestHttpException('Bad content');
     }
 
 

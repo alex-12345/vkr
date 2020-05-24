@@ -93,6 +93,33 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $query->setParameter(1, $id);
         return $query->getOneOrNullResult();
     }
+    public function findInvite(int $id) : ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->AndWhere('u.id = :id ')
+            ->AndWhere('u.isActive = :isActive ')
+            ->setParameter('id', $id)
+            ->setParameter('isActive', false)
+            ->getQuery()
+            ->setFirstResult(0)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+        ;
+    }
+
+    public function findInviteAdmin() : ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->AndWhere('u.roles LIKE :roles ')
+            ->AndWhere('u.isActive = :isActive ')
+            ->setParameter('roles', "%ROLE_SUPER_ADMIN%")
+            ->setParameter('isActive', false)
+            ->getQuery()
+            ->setFirstResult(0)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+        ;
+    }
 
     public function findActiveUser(int $id) : ?User
     {

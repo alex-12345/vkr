@@ -6,16 +6,16 @@ namespace App\Utils;
 
 class Encryptor
 {
-    public string $appSecretKey;
+    public string $appSecret;
 
-    public function __construct(string $AppSecretKey)
+    public function __construct(string $appSecret)
     {
-        $this->appSecretKey = $AppSecretKey;
+        $this->appSecret = $appSecret;
     }
 
     public function computedCheckSim(array $payload)
     {
-        return sha1(implode($payload,"_").$this->appSecretKey);
+        return sha1(implode($payload,"_").$this->appSecret);
     }
 
 }

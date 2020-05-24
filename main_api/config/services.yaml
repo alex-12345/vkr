@@ -35,9 +35,9 @@ services:
         arguments:
             $ttl: '%gesdinet_jwt_refresh_token.ttl%'
 
-    App\EventSubscriber\AppSecretCheckSubscriber:
+    App\Utils\Checker:
         arguments:
-            $AppSecretKey: '%app_secret%'
+            $appSecret: '%app_secret%'
 
     App\EventSubscriber\EmailNotificationSubscribers\UserChangesEmailSubscriber:
         arguments:
@@ -49,4 +49,5 @@ services:
             $workspace_name: '%app_url%'
     App\Utils\Encryptor:
         arguments:
-            $AppSecretKey: '%app_secret%'
+            $appSecret: '%app_secret%'
+

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Form\User;
 
-
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;

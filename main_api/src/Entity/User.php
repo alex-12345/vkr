@@ -25,12 +25,12 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      */
-    private string $email;
+    private ?string $email;
 
     /**
      * @ORM\Column(type="json")
      */
-    private array $roles = [];
+    private ?array $roles = [];
 
     /**
      * @var string The hashed password
@@ -41,17 +41,17 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      */
-    private bool $isActive;
+    private ?bool $isActive;
 
     /**
      * @ORM\Column(type="string", length=50)
      */
-    private string $firstName;
+    private ?string $firstName;
 
     /**
      * @ORM\Column(type="string", length=50)
      */
-    private string $secondName;
+    private ?string $secondName;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -66,7 +66,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      */
-    private bool $ban_status;
+    private ?bool $ban_status;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -78,15 +78,13 @@ class User implements UserInterface
      */
     private ?string $new_email;
 
-    public function __construct(?string $firstName, ?string $secondName, ?string $email, ?string $password = null, array $roles = self::ROLE_USER, bool $isActive = false)
+    public function __construct(?string $firstName = null, ?string $secondName = null, ?string $email = null, ?string $password = null, array $roles = self::ROLE_USER, bool $isActive = false)
     {
-        $this->firstName = $firstName;
-        $this->secondName = $secondName;
-        $this->email = $email;
-        $this->password = $password;
-        $this->roles = $roles;
-        $this->isActive = $isActive;
+        $this->isActive = false;
+        $this->description = null;
+        $this->main_photo = null;
         $this->registration_date = new \DateTime();
+        $this->ban_status = false;
     }
 
     public function getId(): ?int
@@ -99,7 +97,7 @@ class User implements UserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
 
@@ -139,7 +137,7 @@ class User implements UserInterface
         return (string) $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(?string $password): self
     {
         $this->password = $password;
 
@@ -180,7 +178,7 @@ class User implements UserInterface
         return $this->firstName;
     }
 
-    public function setFirstName(string $firstName): self
+    public function setFirstName(?string $firstName): self
     {
         $this->firstName = $firstName;
 
@@ -192,7 +190,7 @@ class User implements UserInterface
         return $this->secondName;
     }
 
-    public function setSecondName(string $secondName): self
+    public function setSecondName(?string $secondName): self
     {
         $this->secondName = $secondName;
 

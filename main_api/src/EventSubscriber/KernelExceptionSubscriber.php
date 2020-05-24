@@ -1,12 +1,9 @@
 <?php
-
+declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-
-use App\Events\AppSecretCheckEvent;
 use App\Response\ApiResponse;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
