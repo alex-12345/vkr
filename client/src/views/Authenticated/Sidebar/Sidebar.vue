@@ -1,9 +1,7 @@
 <template>
     <aside class="aside">
-        <h2>Sapechat</h2>
-        <LineSidebar />
-        <Navigation />
-        <LineSidebar />
+        <Search />
+        <Employees />
         <ChatsBlock />
         <UserArea />
     </aside>
@@ -11,16 +9,16 @@
 
 <script>
     import UserArea from '@/views/Authenticated/Sidebar/UserArea'
-    import LineSidebar from '@/views/Authenticated/Sidebar/LineSidebar'
-    import Navigation from '@/views/Authenticated/Sidebar/Navigation'
+    import Employees from '@/views/Authenticated/Sidebar/Employees'
     import ChatsBlock from '@/views/Authenticated/Sidebar/ChatsBlock'
+    import Search from '@/views/Authenticated/Sidebar/Search'
 
     export default {
         components: {
             UserArea,
-            LineSidebar,
-            Navigation,
-            ChatsBlock
+            Employees,
+            ChatsBlock,
+            Search
         }
     }
 </script>
@@ -29,14 +27,9 @@
     .aside {   
         display: flex;
         flex-direction: column;     
-        width: 300px;
+        width: 360px;
         height: 100%;
         float: left;
-        background-color: #7edeea;
-    }
-
-    h2 {
-        margin: 10px auto;
-        font-size: 28px;
+        background-color: #2c2843;
     }
 </style>

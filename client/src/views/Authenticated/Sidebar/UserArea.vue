@@ -1,15 +1,24 @@
 <template>
     <div class="userArea">
-        <div class="user">
-            {{secondNameUser}} {{nameUser}}
+        <div class="avatar">
+            <md-avatar>
+                <img src="https://placeimg.com/40/40/people/5" alt="People">
+            </md-avatar>
         </div>
-        <button 
-            class="settings" 
-            v-on:mouseenter="show(true)"
-            v-on:mouseleave="show(false)"
-        >
-            <img src="@/images/gear.png" alt="gear">
-        </button>
+        <div class="settings">
+            <button
+                class="settingsButton"
+                v-on:mouseenter="show(true)"
+                v-on:mouseleave="show(false)"
+            >
+                <img src="@/images/gear.png" alt="gear">
+            </button>
+        </div>
+        <div class="user">
+            <p class="fullName">{{secondNameUser}} {{nameUser}}</p>
+            <p class="tag">#что_то_будет</p>
+        </div>
+        
         <div class="dropdown" 
             v-if="showMenuSidebar"
             v-on:mouseenter="show(true)"
@@ -63,34 +72,59 @@
 </script>
 
 <style scoped>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600&family=Roboto&display=swap');
+
     .userArea {
-        height: 50px;
+        height: 80px;
         width: 100%;
-        background: #007c88;
+        background: #1e142c;
         position: relative;
         display: inline-block;
     }
+
+    .avatar {
+        position: absolute;
+        left: 30px;
+        top: 15px;
+    }
+
+    .md-avatar {
+        width: 50px;
+        height: 50px;
+    }
     
     .user {
-        float: left;
-        color: white;
-        height: 35px;
-        box-sizing: content-box;
-        font-size: 20px;
-        padding: 15px 0px 0px 10px;
+        width: 180px;
+        height: 100%;
+        font-family: 'Roboto', sans-serif;
+        font-size: 17px;
+        color: #e2dde3;
+        margin-left: 95px;
+        padding-top: 24px;
+    }
+
+    .tag {
+        color: #7f7982;
+        font-family: 'Nunito', sans-serif;
+        font-size: 16px;
     }
 
     .settings {
-        background: #007c88;
-        width: 40px;
-        height: 40px;
-        padding: 5px;
+        float: right;
+        width: 85px;
+        height: 100%;
+        background: inherit;
+    }
+
+    .settingsButton {
+        background: inherit;
+        width: 30px;
+        height: 30px;
+        margin: 25px 0px 0px 30px;
         box-sizing: content-box;
         border: none;
         outline: none;
         cursor: pointer;
-        display: block;
-        margin-left: auto;
     }
 
     .settings img {

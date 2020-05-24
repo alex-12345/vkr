@@ -3,6 +3,7 @@
         class="addButton" 
         v-on:click="addChat" 
     >
+        <img src="@/images/plus.png" alt="add button">
     </button>
 </template>
 
@@ -27,17 +28,17 @@
 
 <style scoped>
     .addButton {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: inherit;
-        background-image: url(https://img.icons8.com/ios-glyphs/30/000000/plus-math.png);
-        background-size: 20px 20px;
-        display: block;
-        float: right;
+        background-color: inherit;
+        padding-top: 9px;
+        margin-right: 8px;
         cursor: pointer;
         box-sizing: padding-box;
         border: none;
         outline: none;
     }
+
+    .addButton img{
+        width: 25px;
+    }
+    
 </style>

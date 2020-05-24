@@ -3,15 +3,14 @@ export default {
         chats: [
             {
                 id: 1, 
-                title: 'frontenddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 
+                title: 'веб-чатfffffffffffffffffffffffffffffffffffffff', 
                 showSubChat: false,
                 thereIsSsubChats: true,
-                showCross: false,
                 showSubChatInput: false,
                 subChats: [
-                    {id: 1, showCross: false, title: 'регистрация'},
-                    {id: 2, showCross: false, title: 'авторизация'},
-                    {id: 3, showCross: false, title: 'интерфейс чатов'},
+                    {id: 1, title: 'регистрация'},
+                    {id: 2, title: 'авторизация'},
+                    {id: 3, title: 'интерфейс чатов'},
                 ]
             },
             {
@@ -19,23 +18,22 @@ export default {
                 title: 'backend', 
                 showSubChat: false,
                 thereIsSsubChats: true,
-                showCross: false,
                 showSubChatInput: false,
                 subChats: [
-                    {id: 1, showCross: false, title: 'api'},
-                    {id: 2, showCross: false, title: 'почтовый серверhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'},
-                    {id: 3, showCross: false, title: 'установщик'},
-                    {id: 4, showCross: false, title: 'установщикdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'},
-                    {id: 5, showCross: false, title: 'установщик'},
-                    {id: 6, showCross: false, title: 'установщик'},
-                    {id: 7, showCross: false, title: 'установщик'},
-                    {id: 8, showCross: false, title: 'установщик'},
-                    {id: 9, showCross: false, title: 'установщик'},
-                    {id: 10, showCross: false, title: 'установщик'},
-                    {id: 11, showCross: false, title: 'установщик'},
-                    {id: 12, showCross: false, title: 'установщик'},
-                    {id: 13, showCross: false, title: 'установщик'},
-                    {id: 14, showCross: false, title: 'установщик'},
+                    {id: 1, title: 'api'},
+                    {id: 2, title: 'почтовый серверhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'},
+                    {id: 3, title: 'установщик'},
+                    {id: 4, title: 'установщикdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'},
+                    {id: 5, title: 'установщик'},
+                    {id: 6, title: 'установщик'},
+                    {id: 7, title: 'установщик'},
+                    {id: 8, title: 'установщик'},
+                    {id: 9, title: 'установщик'},
+                    {id: 10, title: 'установщик'},
+                    {id: 11, title: 'установщик'},
+                    {id: 12, title: 'установщик'},
+                    {id: 13, title: 'установщик'},
+                    {id: 14, title: 'установщик'},
                 ]
             },
             {
@@ -43,13 +41,11 @@ export default {
                 title: 'frontend', 
                 showSubChat: false,
                 thereIsSsubChats: false,
-                showCross: false,
                 showSubChatInput: false,
                 subChats: []
             }
         ],
         show: false,
-        showCross: false,
         showChatInput: false,
         selectedChat: undefined,
     },
@@ -65,12 +61,6 @@ export default {
         changeShowSubChats(ctx, id) {
             ctx.commit('updateShowSubChats', id)
         },
-        changeShowCross(ctx, id) {
-            ctx.commit('updateShowCross', id)
-        },
-        changeShowSubCross(ctx, allId) {
-            ctx.commit('updateShowSubCross', allId)
-        },
         changeShowChatInput(ctx) {
             ctx.commit('updateShowChatInput')
         },
@@ -78,10 +68,16 @@ export default {
             ctx.commit('updateShowSubChatInput', id)
         },
         addChat(ctx, name) {
-            ctx.commit('pushChat', name)
+            if (name != '') {
+                console.log('Я тут 1')
+                ctx.commit('pushChat', name)
+            }
         },
         addSubChat(ctx, newSubChat) {
-            ctx.commit('pushSubChat', newSubChat)
+            if (newSubChat.name != '') {
+                console.log('Я тут 2')
+                ctx.commit('pushSubChat', newSubChat)
+            }
         },
         delChat(ctx, id) {
             ctx.commit('delChat', id)
@@ -97,19 +93,6 @@ export default {
         updateShowSubChats(state, id) {
             state.chats[id].showSubChat = !(state.chats[id].showSubChat)
         },
-        updateShowCross(state, id) {
-            state.chats[id].showCross = !(state.chats[id].showCross)
-        },
-        updateShowSubCross(state, allId) {
-            for (let j = 0; j < state.chats.length; j++) {
-                if (state.chats[j].thereIsSsubChats === true) {
-                    for (let i = 0; i < state.chats[j].subChats.length; i++) {
-                        state.chats[j].subChats[i].showCross = false
-                    }
-                }
-            }            
-            state.chats[allId.idChat].subChats[allId.idSubChat].showCross = (!state.chats[allId.idChat].subChats[allId.idSubChat].showCross)
-        },
         updateShowChatInput(state) {
             state.showChatInput = !(state.showChatInput)
         },
@@ -122,7 +105,6 @@ export default {
                 title: name, 
                 showSubChat: false,
                 thereIsSsubChats: false,
-                showCross: false,
                 showSubChatInput: false,
                 subChats: []
             })
@@ -132,8 +114,7 @@ export default {
                 state.chats[newSubChat.id].thereIsSsubChats = true
             }
             state.chats[newSubChat.id].subChats.push({
-                id: state.chats[newSubChat.id].subChats.length + 1, 
-                showCross: false,
+                id: state.chats[newSubChat.id].subChats.length + 1,
                 title: newSubChat.name,
             })
         },

@@ -1,5 +1,10 @@
 <template>
-    <button class="deleteButton" v-on:click="deleteChat"></button>
+    <button 
+        class="deleteButton" 
+        v-on:click="deleteChat"
+    >
+        <img src="@/images/plus.png" alt="delete button">
+    </button>
 </template>
 
 <script>
@@ -23,17 +28,17 @@
 
 <style scoped>
     .deleteButton {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: inherit;
-        background-image: url(https://img.icons8.com/ios-glyphs/30/000000/multiply.png);
-        background-size: 20px 20px;
-        display: block;
-        float: right;
+        background-color: inherit;
+        padding-top: 9px;
+        margin-right: 8px;
         cursor: pointer;
         box-sizing: padding-box;
         border: none;
         outline: none;
+    }
+
+    .deleteButton img{
+        width: 25px;
+        transform: rotate(45deg);
     }
 </style>
