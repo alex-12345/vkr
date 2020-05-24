@@ -12,7 +12,7 @@
 </template>
 
 <script>
-    import Message from '@/views/Authenticated/Chat/Message'
+    import Message from '@/views/Authenticated/Chat/Message/Message'
     import EmptyState from '@/views/Authenticated/Chat/EmptyState'
 
     export default {
@@ -21,9 +21,6 @@
             Message,
             EmptyState
         },
-        created() {
-            console.log('Длина:', )
-        }
     }
 </script>
 

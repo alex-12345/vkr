@@ -47,6 +47,7 @@
             ...mapActions(['changeShowChats']),
             changeShow() {
                 this.changeShowChats()
+                this.$router.push("/chat/messages");
             }
         },
         components: {

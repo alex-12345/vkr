@@ -13,11 +13,19 @@
 </template>
 
 <script>
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
+        computed: mapGetters([
+            "showChats",
+        ]),
         methods: {
+            ...mapActions(['changeShowChats']),
             processAction() {
-                console.log('Сотрудники')
+                if (this.showChats) {
+                    this.changeShowChats()
+                }
+                this.$router.push("/chat/employees");
             },
         },
     }
