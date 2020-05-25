@@ -12,13 +12,13 @@ const ifNotAuthenticated = (to, from, next) => {
     next('/chat')
 }
   
-/*const ifAuthenticated = (to, from, next) => {
+const ifAuthenticated = (to, from, next) => {
     if (store.getters.isAuthenticated) {
       next()
       return
     }
     next('/authorization')
-}*/
+}
 
 export default new Router({
     mode: 'history',
@@ -49,7 +49,7 @@ export default new Router({
         {
             path: '/chat',
             component: () => import('./views/Authenticated/MainPage.vue'),
-            //beforeEnter: ifAuthenticated,
+            beforeEnter: ifAuthenticated,
             children: [
                 {
                     path: 'settings',

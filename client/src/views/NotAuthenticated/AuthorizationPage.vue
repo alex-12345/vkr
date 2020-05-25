@@ -101,12 +101,12 @@
                     console.log(user)*/
                     // do your submit logic here
                     this.changeSubmitStatusLogin('PENDING')
-                    this.$router.push("/chat"); //Не забудь убрать
-                    /*this.addUser({name: this.emailLogin, pass: this.passwordLogin})
+                    
+                    this.addUser({name: this.emailLogin, pass: this.passwordLogin})
                     this.authRequest(this.getUser).then(() => {
                         this.changeSubmitStatusLogin('')
                         this.$router.push("/chat");
-                    })*/
+                    })
                 }
             }
         },
