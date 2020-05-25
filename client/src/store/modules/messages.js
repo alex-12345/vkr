@@ -137,7 +137,9 @@ export default {
                 ]
             },
         ],
-        selectedChat: undefined,
+        //содержит массив сообщений
+        selectedChat: undefined, 
+        //нужен, чтобы понять в какой чат добавлять сообщения
         selectedChatId: {
             chatId: undefined,
             subChatId: undefined,
