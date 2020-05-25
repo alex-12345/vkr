@@ -7,8 +7,8 @@ import registrationPlatform from './modules/registrationPlatform'
 import registrationUser from './modules/registrationUser'
 import dropDownMenu from './modules/dropDownMenu'
 import user from './modules/user'
-import navSidebarItems from './modules/navSidebarItems'
 import chats from './modules/chats'
+import messages from './modules/messages'
 
 Vue.use(Vuex)
 
@@ -21,7 +21,7 @@ export default new Vuex.Store({
         registrationUser,
         dropDownMenu,
         user,
-        navSidebarItems,
-        chats
+        chats,
+        messages
     }
 })

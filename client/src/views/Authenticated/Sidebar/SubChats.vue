@@ -1,16 +1,24 @@
 <template>
-    <button 
-        class="subChat"
-        v-on:click="changeShowCross"
-    >
-        <img src="https://img.icons8.com/ios-filled/50/000000/hashtag.png"/>
-        <div class="title">
-            {{subChat.title}}
-        </div>
-        <DeleteChatButton 
-            v-show="subChat.showCross"
-        />
-    </button>
+    <div class="subChat">
+        <button 
+            class="subChatTitle"
+            v-on:click="changeShowCross"
+        >
+            <div class="iconChat">
+                <img src="@/images/tag.png" alt="tag">
+            </div>
+            <div class="title">
+                {{subChat.title}}
+            </div>
+            <div class="deleteArea">
+                <DeleteChatButton 
+                    v-bind:chatId="chatId"
+                    v-bind:subChatId="subChat.id"
+                    v-bind:type="'subChat'"
+                />
+            </div>
+        </button>
+    </div>
 </template>
 
 <script>
@@ -20,55 +28,71 @@
     export default {
         props: ['subChat', 'chatId'],
         methods: {
-            ...mapActions(['changeShowSubCross']),
+            ...mapActions(['changeSelectedChat', 'changeSelectedChatId']),
             changeShowCross() {
-                this.changeShowSubCross({idChat: this.chatId - 1, idSubChat: this.subChat.id - 1})
+                this.changeSelectedChatId({chatId: this.chatId, subChatId: this.subChat.id})
+                this.changeSelectedChat({chatId: this.chatId, subChatId: this.subChat.id})
             },
         },
         components: {
             DeleteChatButton
-        }
+        },
     }
 </script>
 
 <style scoped>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito&family=Roboto&display=swap');
+
     .subChat {
-        float: right;
-        width: 93%;
-        height: 40px;
-        color: #2c3e50;
-        text-align: left;
+        width: 100%;
+        background-color: inherit;
+    }
+
+    .subChatTitle {
+        width: 290px;
+        height: 45px;
+        position: relative;
+        display: block;
+        margin: 0px auto;
         background-color: inherit;
         border-radius: 10px;
         cursor: pointer;
-        box-sizing: border-box;
         border: none;
         outline: none;
-        margin: 10px 0px 0px 0px;
-        padding: 5px;
+        text-align: left;
     }
 
-    .subChat:hover {
-        background-color: #89e6f1;
+    .subChatTitle:hover, .subChatTitle:focus {
+        background-color: #262336;
     }
 
-    .subChat:focus {
-        background-color: #97f3ff;
+    .iconChat {
+        position: absolute;
+        left: 8px;
+        top: 12px;
     }
 
-    img {
-        float: left;
-        height: 25px;
+    .iconChat img {
+        width: 23px;
     }
     
     .title {
-        font-size: 16px;
-        font-weight: bold;
+        display: inline-block;
+        max-width: 200px;
+        height: 100%;
+        margin-left: 42px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 20px;
         text-align: left;
-        margin: 4px 0px 0px 10px;
-        text-overflow: ellipsis;
+        color: #b4b2bb;
+        padding-top: 8px;
+        white-space: nowrap;
         overflow: hidden;
-        width: 50%;
-        float: left;
+        text-overflow: ellipsis;
+    }
+
+    .deleteArea {
+        float: right;
+        height: 100%;
     }
 </style>

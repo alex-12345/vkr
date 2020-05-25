@@ -1,9 +1,9 @@
 <template>
     <button 
-        class="deleteButton" 
-        v-on:click="deleteChat"
+        class="addButton" 
+        v-on:click="addChat" 
     >
-        <img src="@/images/plus.png" alt="delete button">
+        <img src="@/images/plus.png" alt="add button">
     </button>
 </template>
 
@@ -11,15 +11,15 @@
     import {mapActions} from 'vuex'
 
     export default {
-        props: ['chatId', 'type', 'subChatId'],
+        props: ['chatId', 'type'],
         methods: {
-            ...mapActions(['delChat', 'delSubchats']),
-            deleteChat() {
+            ...mapActions(['changeShowChatInput', 'addSubchat', 'changeShowSubChatInput']),
+            addChat() {
                 if (this.type === 'subChat') {
-                    this.delSubchats({idChat: this.chatId - 1, idSubChat: this.subChatId - 1})
+                    this.changeShowSubChatInput(this.chatId - 1)
                 }
                 else if (this.type === 'chat') {
-                    this.delChat(this.chatId - 1)
+                    this.changeShowChatInput()
                 }
             }
         }
@@ -27,7 +27,7 @@
 </script>
 
 <style scoped>
-    .deleteButton {
+    .addButton {
         background-color: inherit;
         padding-top: 9px;
         margin-right: 8px;
@@ -37,8 +37,8 @@
         outline: none;
     }
 
-    .deleteButton img{
+    .addButton img{
         width: 25px;
-        transform: rotate(45deg);
     }
+    
 </style>

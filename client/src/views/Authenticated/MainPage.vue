@@ -1,18 +1,20 @@
 <template>
     <div id="wrapper">
         <Sidebar />
-        <Chat />
+        <router-view />
     </div>
 </template>
 
 <script>
     import Sidebar from '@/views/Authenticated/Sidebar/Sidebar'
-    import Chat from '@/views/Authenticated/Chat'
+    import {mapGetters} from 'vuex'
     
     export default {
+        computed: mapGetters([
+            "selectedChat",
+        ]),
         components: {
             Sidebar,
-            Chat
         },
     }
 </script>

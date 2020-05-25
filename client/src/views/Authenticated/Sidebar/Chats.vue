@@ -1,28 +1,35 @@
 <template>
     <div class="chats">
-        <button 
-            class="chat" 
-            v-on:click="changeShow" 
-            v-bind:class="{focus: chat.showSubChat}"
+        <div 
+            class="title" 
         >
-            <img 
-                src="https://img.icons8.com/ios-filled/50/000000/hashtag.png" 
-                v-if="!chat.thereIsSsubChats"
-            >
-            <img 
-                src="@/images/listIcon.png" 
-                alt="list icon" 
-                v-bind:class="{expand: chat.showSubChat}" 
-                v-if="chat.thereIsSsubChats"
-            >
-            <div class="title">
-                {{chat.title}}
+            <button class="open" v-on:click="changeShow">
+                <div class="iconChat">
+                    <img src="@/images/strelka.png" alt="icon chat" v-bind:class="{show: chat.showSubChat}" >
+                </div>
+                <div class="text">
+                    {{chat.title}}
+                </div>
+            </button>
+            <div class="deleteArea">
+                <DeleteChatButton 
+                    v-bind:chatId="chat.id"
+                    v-bind:type="'chat'"
+                />
             </div>
-            <DeleteChatButton 
-                v-show="chat.showCross"
-            />
-        </button>
-        <div class="subChatsArea" v-if="chat.showSubChat">
+            <div class="addArea">
+                <AddChatButton
+                    v-bind:chatId="chat.id"
+                    v-bind:type="'subChat'"
+                />
+            </div>
+        </div>
+        <InputArea 
+            v-bind:type="'subChat'"
+            v-bind:chatId="chat.id"
+            v-show="chat.showSubChatInput" 
+        />
+        <div class="subChatsArea" v-show="chat.showSubChat">
             <SubChats
                 v-for="subChat of chat.subChats" :key="subChat.id"
                 v-bind:subChat="subChat"
@@ -34,71 +41,110 @@
 
 <script>
     import SubChats from '@/views/Authenticated/Sidebar/SubChats'
+    import AddChatButton from '@/views/Authenticated/Sidebar/AddChatButton'
     import DeleteChatButton from '@/views/Authenticated/Sidebar/DeleteChatButton'
+    import InputArea from '@/views/Authenticated/Sidebar/InputArea'
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
         props: ['chat'],
         components: {
             SubChats,
-            DeleteChatButton
+            DeleteChatButton,
+            AddChatButton,
+            InputArea
         },
         computed: mapGetters([
             "subChats",
             "showCross"
         ]),
         methods: {
-            ...mapActions(['changeShowSubChats', 'changeShowCross']),
+            ...mapActions(['changeShowSubChats', 'changeSelectedChat', 'changeSelectedChatId']),
             changeShow() {
                 this.changeShowSubChats(this.chat.id - 1)
-                this.changeShowCross(this.chat.id - 1)
-            },
+                this.changeSelectedChatId({chatId: this.chat.id, subChatId: undefined})
+                this.changeSelectedChat({chatId: this.chat.id, subChatId: undefined})
+            }
         }
     }
 </script>
 
 <style scoped>
-    .chat {
-        float: right;
-        width: 97%;
-        height: 40px;
-        color: #2c3e50;
-        text-align: left;
+    @import url('https://fonts.googleapis.com/css2?family=Nunito&family=Roboto&display=swap');
+
+    .chats, .chat, .inputArea {
+        border-radius: 10px;
+        background-color: inherit;
+    }
+
+    .chats {
+        width: 100%;
+    }
+
+    .title {
+        width: 290px;
+        height: 45px;
+        position: relative;
+        display: block;
+        margin: 0px auto;
         background-color: inherit;
         border-radius: 10px;
+    }
+
+    .title:hover, .title:focus {
+        background-color: #262336;
+    }
+
+    .open {
+        width: 224px;
+        margin-top: 3px;
+        background-color: inherit;
+        color: #b4b2bb;
+        border-radius: 10px;
         cursor: pointer;
-        box-sizing: padding-box;
         border: none;
         outline: none;
-        margin: 10px 0px 0px 0px;
-        padding: 5px;
+        text-align: left;
     }
 
-    .chat:hover {
-        background-color: #89e6f1;
+    .iconChat {
+        position: absolute;
+        left: 8px;
+        top: 12px;
+        transform: rotate(-90deg);
     }
 
-    .focus, .focus:hover {
-        background-color: #97f3ff;
+    .iconChat img {
+        width: 20px;
     }
 
-    img {
-        float: left;
-        height: 25px;
-    }
-
-    .expand {
+    .show {
         transform: rotate(90deg);
     }
     
-    .title {
-        font-size: 16px;
-        font-weight: bold;
+    .text {
+        display: inline-block;
+        max-width: 180px;
+        height: 100%;
+        margin-left: 42px;
+        font-family: 'Nunito', sans-serif;
+        font-size: 24px;
         text-align: left;
-        text-overflow: ellipsis;
+        font-weight: bold;
+        color: #b4b2bb;
+        padding-top: 5px;
+        white-space: nowrap;
         overflow: hidden;
-        margin: 4px 0px 0px 10px;
-        width: 50%;
-        float: left;
+        text-overflow: ellipsis;
+    }
+
+    .addArea {
+        float: right;
+        height: 100%;
+    }
+
+    .deleteArea {
+        float: right;
+        height: 100%;
     }
 </style>
