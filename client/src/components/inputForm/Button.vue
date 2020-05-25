@@ -30,8 +30,8 @@
         display: block;
         width: 100%;
         height: 40px;
-        background-color: #5e90ff;
-        color: white;
+        background-color: #2c2843;
+        color: #ebe8f0;
         border: none;
         border-radius: 5px;
         padding: 0px 40px;

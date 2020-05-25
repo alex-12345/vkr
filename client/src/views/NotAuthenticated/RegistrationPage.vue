@@ -60,7 +60,7 @@
     .registrationPlatform{
         float: left;
         border-right: 1px solid #9e9e9e;
-        background-color: #5e90ff;
+        background-color: #2c2843;
         color: white;
     }
 
@@ -93,7 +93,7 @@
     }
 
     .registrationUser button {
-        background-color: #5e90ff;
+        background-color: #2c2843;
         color: white;
     }
 </style>
