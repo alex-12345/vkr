@@ -3,8 +3,17 @@ declare(strict_types=1);
 
 namespace App\Utils;
 
-
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\Parameter(
+ *     name="workspace_key",
+ *     in="query",
+ *     required=true,
+ *     @OA\Schema(type="string")
+ * )
+ */
 
 class Checker
 {

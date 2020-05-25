@@ -9,6 +9,25 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\RequestBody(
+ *     request="ConfirmUserEmail",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         @OA\Property(property="hash", type="string")
+ *     )
+ * )
+ * @OA\RequestBody(
+ *     request="confirmUserEmailWithPasswordEnter",
+ *     ref="#/components/requestBodies/UpdatePassword",
+ *     @OA\JsonContent(
+ *         @OA\Property(property="hash", type="string")
+ *     )
+ * )
+ */
+
 
 class ConfirmEmailType extends PasswordNonEncryptedType
 {

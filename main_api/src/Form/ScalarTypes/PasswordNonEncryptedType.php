@@ -10,7 +10,17 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use OpenApi\Annotations as OA;
 
+/**
+ * @OA\RequestBody(
+ *     request="UpdatePassword",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         @OA\Property(property="password", type="string", minimum="6", maximum="255")
+ *     )
+ * )
+ */
 class PasswordNonEncryptedType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)

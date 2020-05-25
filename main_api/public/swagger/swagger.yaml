@@ -1,0 +1,416 @@
+openapi: 3.0.0
+info:
+  title: 'Corporate chat main API'
+  description: 'Main api documentation'
+  version: '1.0'
+servers:
+  -
+    url: 'http://localhost:8000'
+paths:
+  /api/users/admin:
+    get:
+      tags:
+        - users
+      summary: 'Show admin'
+      operationId: 'App\Controller\UserController::showAdmin'
+      parameters:
+        -
+          $ref: '#/components/parameters/workspace_key'
+      responses:
+        '200':
+          description: 'Success show admin'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { $ref: '#/components/schemas/UserWithRegDate' }
+                type: object
+        '403':
+          description: 'Denied access'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Admin not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+  '/api/user/{id}/password':
+    put:
+      tags:
+        - users
+      description: 'Update user password'
+      operationId: 'App\Controller\UserController::changeUserPassword'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdatePassword'
+      responses:
+        '200':
+          description: 'Success change user password'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { password: { type: string } }, type: object }
+                type: object
+        '400':
+          description: 'Bad content'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '403':
+          description: 'Denied access'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+      security:
+        - bearer
+  '/api/user/{id}/main_photo':
+    put:
+      tags:
+        - users
+      description: 'Update user main photo'
+      operationId: 'App\Controller\UserController::changeUserMainPhoto'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateMainPhoto'
+      responses:
+        '200':
+          description: 'Success change user main photo'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { main_photo: { type: string } }, type: object }
+                type: object
+        '400':
+          description: 'Bad content'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '403':
+          description: 'Denied access'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+      security:
+        - bearer
+  '/api/user/{id}/description':
+    put:
+      tags:
+        - users
+      description: 'Update user description'
+      operationId: 'App\Controller\UserController::changeUserDescription'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateDescription'
+      responses:
+        '200':
+          description: 'Success update user description'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { description: { type: string } }, type: object }
+                type: object
+        '400':
+          description: 'Bad content'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '403':
+          description: 'Denied access'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+      security:
+        - bearer
+  '/api/user/{id}/email':
+    put:
+      tags:
+        - users
+      description: 'create request on user email change'
+      operationId: 'App\Controller\UserController::changeUserEmail'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      requestBody:
+        $ref: '#/components/requestBodies/confirmUserEmailWithPasswordEnter'
+      responses:
+        '200':
+          description: 'Success create request'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { new_email: { type: string } }, type: object }
+                type: object
+        '400':
+          description: 'Bad content'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '403':
+          description: 'Denied access'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '409':
+          description: 'Conflict with other user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+    post:
+      tags:
+        - users
+      description: 'create request on user email change'
+      operationId: 'App\Controller\UserController::createNewUserEmail'
+      parameters:
+        -
+          $ref: '#/components/parameters/id'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateUserEmail'
+      responses:
+        '200':
+          description: 'Success create request'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { new_email: { type: string } }, type: object }
+                type: object
+        '400':
+          description: 'Bad content'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '403':
+          description: 'Denied access'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '409':
+          description: 'Conflict with other user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+      security:
+        - bearer
+components:
+  schemas:
+    Error400:
+      description: 'Bad request'
+      properties:
+        errors:
+          properties:
+            status:
+              type: integer
+              example: '400'
+            title:
+              type: string
+          type: object
+      type: object
+    Error403:
+      description: 'Access denied'
+      properties:
+        errors:
+          properties:
+            status:
+              type: integer
+              example: '403'
+            title:
+              type: string
+          type: object
+      type: object
+    Error404:
+      description: 'Not found'
+      properties:
+        errors:
+          properties:
+            status:
+              type: integer
+              example: '404'
+            title:
+              type: string
+          type: object
+      type: object
+    Error409:
+      description: 'Conflict error'
+      properties:
+        errors:
+          properties:
+            status:
+              type: integer
+              example: '409'
+            title:
+              type: string
+          type: object
+      type: object
+    User:
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        second_name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        main_photo:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+      type: object
+    UserWithRegDate:
+      properties:
+        registration_date:
+          type: string
+      type: object
+      allOf:
+        -
+          $ref: '#/components/schemas/User'
+  parameters:
+    workspace_key:
+      name: workspace_key
+      in: query
+      required: true
+      schema:
+        type: string
+    id:
+      name: id
+      in: path
+      description: 'Id of resource'
+      required: true
+      schema:
+        type: integer
+  requestBodies:
+    UpdateMainPhoto:
+      required: true
+      content:
+        application/json:
+          schema:
+            properties:
+              main_photo:
+                type: link
+                example: 'http://photo.sapechat.ru/photo.jpg'
+            type: object
+    UpdatePassword:
+      required: true
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                maximum: '255'
+                minimum: '6'
+            type: object
+    UpdateDescription:
+      required: true
+      content:
+        application/json:
+          schema:
+            properties:
+              description:
+                type: string
+                maximum: '255'
+            type: object
+    ConfirmUserEmail:
+      required: true
+      content:
+        application/json:
+          schema:
+            properties:
+              hash:
+                type: string
+            type: object
+    confirmUserEmailWithPasswordEnter:
+      content:
+        application/json:
+          schema:
+            properties:
+              hash:
+                type: string
+            type: object
+      $ref: '#/components/requestBodies/UpdatePassword'
+    UpdateUserEmail:
+      required: true
+      content:
+        application/json:
+          schema:
+            properties:
+              link:
+                type: link
+                example: 'http://client.sapechat.ru/confirmEmail'
+              new_email:
+                type: string
+                example: example@mail.com
+            type: object
+  securitySchemes:
+    bearer:
+      type: apiKey
+      bearerFormat: JWT
+tags:
+  -
+    name: users
+    description: 'Operations about users'
+  -
+    name: invites
+    description: 'Operations about invites'
+  -
+    name: workspace
+    description: 'Operations about workspace'

@@ -11,6 +11,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\RequestBody(
+ *     request="UpdateUserEmail",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         @OA\Property(property="link", type="link", example="http://client.sapechat.ru/confirmEmail"),
+ *         @OA\Property(property="new_email", type="string", example="example@mail.com")
+ *     )
+ * )
+ */
 
 class NewEmailTypes extends AbstractType
 {

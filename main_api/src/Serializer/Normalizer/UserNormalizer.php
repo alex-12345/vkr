@@ -5,7 +5,25 @@ namespace App\Serializer\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use OpenApi\Annotations as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="first_name", type="string"),
+ *     @OA\Property(property="second_name", type="string"),
+ *     @OA\Property(property="roles", type="array", @OA\Items(type="string")),
+ *     @OA\Property(property="main_photo", type="string"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="is_active", type="boolean")
+ * )
+ * @OA\Schema(
+ *     schema="UserWithRegDate",
+ *     allOf={@OA\Schema(ref="#/components/schemas/User")},
+ *     @OA\Property(property="registration_date", type="string")
+ * )
+ */
 class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
 
@@ -24,7 +42,7 @@ class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInte
         };
 
         if(in_array('registration_date', $context)){
-            $data["registration_date"] = $object->getIsActive();
+            $data["registration_date"] = $object->getRegistrationDate()->format(\DateTimeInterface::ISO8601);
         };
 
         return $data;
