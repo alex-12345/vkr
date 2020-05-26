@@ -85,7 +85,7 @@
         height: 45px;
         position: relative;
         display: block;
-        margin: 5px auto;
+        margin: 0px auto;
         background-color: inherit;
         border-radius: 10px;
     }
