@@ -33,22 +33,16 @@ class UserController extends AbstractController
 {
     /**
      * @OA\Get(
-     *     path="/api/users/admin",
+     *     path="/api/users/superadmin",
      *     tags={"users"},
-     *     summary="Show admin",
+     *     description="Show superadmin",
      *     @OA\Parameter(ref="#/components/parameters/workspace_key"),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Success show admin",
-     *         @OA\JsonContent(
-     *              @OA\Property(property="data", ref="#/components/schemas/UserWithRegDate")
-     *          )
-     *     ),
-     *     @OA\Response(response=403, description="Denied access", @OA\JsonContent(ref="#/components/schemas/Error403")),
-     *     @OA\Response(response=404, description="Admin not found", @OA\JsonContent(ref="#/components/schemas/Error404"))
+     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
      * )
      *
-     * @Route("/api/users/admin", methods={"GET"})
+     * @Route("/api/users/superadmin", methods={"GET"})
      * @Entity(name="admin", expr="repository.findSuperAdmin()")
      */
     public function showAdmin(?User $admin, Request $request, UserNormalizer $normalizer, Checker $checker)
@@ -62,24 +56,23 @@ class UserController extends AbstractController
 
     /**
      * @OA\Put(
-     *     path="/api/user/{id}/password",
+     *     path="/api/users/{id}/password",
      *     tags={"users"},
-     *     security={"bearer"},
+     *     security={{"bearer":{}}},
      *     description="Update user password",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdatePassword"),
      *     @OA\Response(
      *         response=200,
      *         description="Success change user password",
-     *         @OA\JsonContent(
-     *              @OA\Property(property="data", @OA\Property(property="password", type="string"))
-     *          )
+     *         @OA\JsonContent(@OA\Property(property="data", @OA\Property(property="password", type="string")))
      *     ),
-     *     @OA\Response(response=400, description="Bad content", @OA\JsonContent(ref="#/components/schemas/Error400")),
-     *     @OA\Response(response=403, description="Denied access", @OA\JsonContent(ref="#/components/schemas/Error403")),
-     *     @OA\Response(response=404, description="User not found", @OA\JsonContent(ref="#/components/schemas/Error404"))
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
      * )
-     * @Route("/api/user/{id<\d+>}/password", methods={"PUT"})
+     * @Route("/api/users/{id<\d+>}/password", methods={"PUT"})
      * @Security("is_granted('editAccount', changingUser)")
      */
     public function changeUserPassword(Request $request, User $changingUser, UserPasswordEncoderInterface $passwordEncoder)
@@ -106,9 +99,9 @@ class UserController extends AbstractController
 
     /**
      * @OA\Put(
-     *     path="/api/user/{id}/main_photo",
+     *     path="/api/users/{id}/main_photo",
      *     tags={"users"},
-     *     security={"bearer"},
+     *     security={{"bearer":{}}},
      *     description="Update user main photo",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdateMainPhoto"),
@@ -119,9 +112,10 @@ class UserController extends AbstractController
      *              @OA\Property(property="data", @OA\Property(property="main_photo", type="string"))
      *          )
      *     ),
-     *     @OA\Response(response=400, description="Bad content", @OA\JsonContent(ref="#/components/schemas/Error400")),
-     *     @OA\Response(response=403, description="Denied access", @OA\JsonContent(ref="#/components/schemas/Error403")),
-     *     @OA\Response(response=404, description="User not found", @OA\JsonContent(ref="#/components/schemas/Error404"))
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
      * )
      * @Route("/api/users/{id<\d+>}/main_photo", methods={"PUT"})
      * @Security("is_granted('editAccount', changingUser)")
@@ -147,9 +141,9 @@ class UserController extends AbstractController
     }
     /**
      * @OA\Put(
-     *     path="/api/user/{id}/description",
+     *     path="/api/users/{id}/description",
      *     tags={"users"},
-     *     security={"bearer"},
+     *     security={{"bearer":{}}},
      *     description="Update user description",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdateDescription"),
@@ -160,9 +154,10 @@ class UserController extends AbstractController
      *              @OA\Property(property="data", @OA\Property(property="description", type="string"))
      *          )
      *     ),
-     *     @OA\Response(response=400, description="Bad content", @OA\JsonContent(ref="#/components/schemas/Error400")),
-     *     @OA\Response(response=403, description="Denied access", @OA\JsonContent(ref="#/components/schemas/Error403")),
-     *     @OA\Response(response=404, description="User not found", @OA\JsonContent(ref="#/components/schemas/Error404"))
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
      * )
      * @Route("/api/users/{id<\d+>}/description", methods={"PUT"})
      * @Security("is_granted('editAccount', changingUser)")
@@ -187,9 +182,9 @@ class UserController extends AbstractController
 
     /**
      * @OA\Post(
-     *     path="/api/user/{id}/email",
+     *     path="/api/users/{id}/email",
      *     tags={"users"},
-     *     security={"bearer"},
+     *     security={{"bearer":{}}},
      *     description="create request on user email change",
      *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdateUserEmail"),
@@ -200,10 +195,11 @@ class UserController extends AbstractController
      *              @OA\Property(property="data", @OA\Property(property="new_email", type="string"))
      *          )
      *     ),
-     *     @OA\Response(response=400, description="Bad content", @OA\JsonContent(ref="#/components/schemas/Error400")),
-     *     @OA\Response(response=403, description="Denied access", @OA\JsonContent(ref="#/components/schemas/Error403")),
-     *     @OA\Response(response=404, description="User not found", @OA\JsonContent(ref="#/components/schemas/Error404")),
-     *     @OA\Response(response=409, description="Conflict with other user", @OA\JsonContent(ref="#/components/schemas/Error404"))
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
      * )
      * @Route("/api/users/{id<\d+>}/email", methods={"POST"})
      * @Security("is_granted('editAccount', changingUser)")
@@ -242,22 +238,16 @@ class UserController extends AbstractController
     }
     /**
      * @OA\Put(
-     *     path="/api/user/{id}/email",
+     *     path="/api/users/{id}/email",
      *     tags={"users"},
-     *     description="create request on user email change",
+     *     description="confirm email change",
      *     @OA\Parameter(ref="#/components/parameters/id"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/confirmUserEmailWithPasswordEnter"),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Success create request",
-     *         @OA\JsonContent(
-     *              @OA\Property(property="data", @OA\Property(property="new_email", type="string"))
-     *          )
-     *     ),
-     *     @OA\Response(response=400, description="Bad content", @OA\JsonContent(ref="#/components/schemas/Error400")),
-     *     @OA\Response(response=403, description="Denied access", @OA\JsonContent(ref="#/components/schemas/Error403")),
-     *     @OA\Response(response=404, description="User not found", @OA\JsonContent(ref="#/components/schemas/Error404")),
-     *     @OA\Response(response=409, description="Conflict with other user", @OA\JsonContent(ref="#/components/schemas/Error404"))
+     *     @OA\RequestBody(required=true, @OA\JsonContent(@OA\Property(property="hash", type="string"))),
+     *     @OA\Response(response=200, ref="#/components/responses/SuccessJWT"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
      * )
      * @Route("/api/users/{id<\d+>}/email", methods={"PUT"})
      */

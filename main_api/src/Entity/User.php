@@ -5,8 +5,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use OpenApi\Annotations as OA;
 
 /**
+ * @OA\Schema(
+ *     schema="UserBrief",
+ *     @OA\Property(property="first_name", type="string"),
+ *     @OA\Property(property="second_name", type="string"),
+ *     @OA\Property(property="email", type="string")
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface

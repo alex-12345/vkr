@@ -25,12 +25,24 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-
+use OpenApi\Annotations as OA;
 
 class InviteUserController extends AbstractController
 {
 
     /**
+     * @OA\Post(
+     *     path="/api/invites",
+     *     tags={"invites"},
+     *     security={{"bearer":{}}},
+     *     description="create user invite to workspace",
+     *     @OA\RequestBody(ref="#/components/requestBodies/Invite"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     * )
      * @Route("/api/invites", methods={"POST"})
      * @Security("is_granted('create', 'invites')")
      */
@@ -61,7 +73,18 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/admin", methods={"POST"})
+     * @OA\Post(
+     *     path="/api/invites/superadmin",
+     *     tags={"invites"},
+     *     description="create superadmin invite to workspace",
+     *     @OA\Parameter(ref="#/components/parameters/workspace_key"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/InviteSuperAdmin"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     * )
+     * @Route("/api/invites/superadmin", methods={"POST"})
      * @Entity(name="admin", expr="repository.findSuperAdmin()")
      */
     public function createAdmin(?User $admin, Request $request, Checker $checker, LinkBuilder $linkBuilder, UserNormalizer $normalizer,  UserPasswordEncoderInterface $passwordEncoder, EventDispatcherInterface $dispatcher)
@@ -96,7 +119,21 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/{id<\d+>}", methods={"PUT"}, requirements={"id"="\d+"})
+     * @OA\Put(
+     *     path="/api/invites/{id}",
+     *     tags={"invites"},
+     *     description="repeat or update invite",
+     *     security={{"bearer":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/Invite"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     * )
+     * @Route("/api/invites/{id<\d+>}", methods={"PUT"})
      * @Security("is_granted('create', 'invites')")
      * @Entity(name="invitedUser", expr="repository.findInvite(id)")
      */
@@ -108,6 +145,7 @@ class InviteUserController extends AbstractController
         $form->submit($request->request->all())->handleRequest(($request));
 
         if($form->isValid()) {
+            //TODO check conflict email if email update
             $em = $this->getDoctrine()->getManager();
             $em->persist($invitedUser);
             $em->flush();
@@ -123,7 +161,19 @@ class InviteUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/invites/admin", methods={"PUT"})
+     * @OA\Put(
+     *     path="/api/invites/superadmin",
+     *     tags={"invites"},
+     *     description="repeat or update superadmin",
+     *     @OA\Parameter(ref="#/components/parameters/workspace_key"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/InviteSuperAdmin"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     * )
+     * @Route("/api/invites/superadmin", methods={"PUT"})
      * @Entity(name="invitedAdmin", expr="repository.findInviteAdmin()")
      */
     public function repeatSuperAdminInvite(?User $invitedAdmin, Request $request, Checker $checker, LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher, UserNormalizer $normalizer, UserPasswordEncoderInterface $passwordEncoder)
@@ -152,6 +202,17 @@ class InviteUserController extends AbstractController
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/invites/{id}",
+     *     tags={"invites"},
+     *     description="Show invite",
+     *     security={{"bearer":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     * )
      * @Route("/api/invites/{id<\d+>}", methods={"GET"})
      * @Security("is_granted('get', 'invites')")
      * @Entity(name="shownInvite", expr="repository.findInvite(id)")
@@ -166,6 +227,17 @@ class InviteUserController extends AbstractController
     }
 
     /**
+     * @OA\Delete(
+     *     path="/api/invites/{id}",
+     *     tags={"invites"},
+     *     description="Remove invite",
+     *     security={{"bearer":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(response=200, description="remove invite", @OA\JsonContent(@OA\Property(property="empty"))),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     * )
      * @Route("/api/invites/{id<\d+>}", methods={"DELETE"})
      * @Security("is_granted('create', 'invites')")
      * @Entity(name="removedInvite", expr="repository.findInvite(id)")
@@ -183,12 +255,24 @@ class InviteUserController extends AbstractController
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/invites/{id}/status",
+     *     tags={"invites"},
+     *     description="Show invite status",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Parameter(name="hash", in="query", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="superadmin", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="invite status",
+     *          @OA\JsonContent(@OA\Property(property="data", @OA\Property(property="is_active", type="boolean")))
+     *     ),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     * )
      * @Route("/api/invites/{id<\d+>}/status", methods={"GET"})
      */
     public function showInviteStatus(int $id,  Request $request, Encryptor $encryptor)
     {
         $hash = ($request->query->has("hash"))? $request->query->get("hash") : null;
-        $encryptPayload = ['id'=> $id] + (($request->query->has("admin"))? ['status' => true]:[]);
+        $encryptPayload = ['id'=> $id] + (($request->query->has("superadmin"))? ['status' => true]:[]);
 
         if($hash === $encryptor->computedCheckSim($encryptPayload)) {
             //TODO maybe refactor repo.findInviteStatus
@@ -202,6 +286,18 @@ class InviteUserController extends AbstractController
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/invites",
+     *     tags={"invites"},
+     *     description="Show invite",
+     *     security={{"bearer":{}}},
+     *     @OA\Parameter(name="page[size]", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="page[number]", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, ref="#/components/responses/UserCollection"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     * )
      * @Route("/api/invites", methods={"GET"})
      * @Security("is_granted('get', 'invites')")
      */
@@ -225,6 +321,18 @@ class InviteUserController extends AbstractController
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/invites/{id}/status",
+     *     tags={"invites"},
+     *     description="confirm invite",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/confirmInvite"),
+     *     @OA\Response(response=200, ref="#/components/responses/SuccessJWT"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     * )
      * @Route("/api/invites/{id<\d+>}/status", methods={"PUT"})
      * @Entity(name="verifiedInvite", expr="repository.findInvite(id)")
      */

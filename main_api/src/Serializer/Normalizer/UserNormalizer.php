@@ -9,20 +9,31 @@ use OpenApi\Annotations as OA;
 
 /**
  * @OA\Schema(
- *     schema="User",
+ *     schema="UserFull",
  *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="first_name", type="string"),
- *     @OA\Property(property="second_name", type="string"),
+ *     allOf={@OA\Schema(ref="#/components/schemas/UserBrief")},
  *     @OA\Property(property="roles", type="array", @OA\Items(type="string")),
  *     @OA\Property(property="main_photo", type="string"),
  *     @OA\Property(property="description", type="string"),
- *     @OA\Property(property="is_active", type="boolean")
- * )
- * @OA\Schema(
- *     schema="UserWithRegDate",
- *     allOf={@OA\Schema(ref="#/components/schemas/User")},
+ *     @OA\Property(property="is_active", type="boolean"),
  *     @OA\Property(property="registration_date", type="string")
  * )
+ * @OA\Response(
+ *     response="UserFull",
+ *     description="response with user object with all properties except password",
+ *     @OA\JsonContent(
+ *         @OA\Property(property="data", allOf={@OA\Schema(ref="#/components/schemas/UserFull")})
+ *     )
+ * )
+ * @OA\Response(
+ *     response="UserCollection",
+ *     description="response with collection user object with all properties except password",
+ *     @OA\JsonContent(
+ *         @OA\Property(property="data", type="array", @OA\Items(allOf={@OA\Schema(ref="#/components/schemas/UserFull")})),
+ *         @OA\Property(property="meta", @OA\Property(property="count", type="integer"))
+ *     )
+ * )
+ *
  */
 class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {

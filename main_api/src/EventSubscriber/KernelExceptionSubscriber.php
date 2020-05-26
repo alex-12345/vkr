@@ -14,39 +14,46 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use OpenApi\Annotations as OA;
 
 /**
- *  @OA\Schema(
- *     schema="Error400",
+ * @OA\Response(
+ *     response="Error400",
  *     description="Bad request",
- *     @OA\Property(property="errors",
- *         @OA\Property(property="status", type="integer", example="400"),
- *         @OA\Property(property="title", type="string")
+ *     @OA\JsonContent(
+ *         @OA\Property(property="errors",
+ *             @OA\Property(property="status", type="integer", example="400"),
+ *             @OA\Property(property="title", type="string")
+ *         )
  *     )
  *  )
- *  @OA\Schema(
- *     schema="Error403",
+ * @OA\Response(
+ *     response="Error403",
  *     description="Access denied",
- *     @OA\Property(property="errors",
- *         @OA\Property(property="status", type="integer", example="403"),
- *         @OA\Property(property="title", type="string")
+ *     @OA\JsonContent(
+ *         @OA\Property(property="errors",
+ *             @OA\Property(property="status", type="integer", example="403"),
+ *             @OA\Property(property="title", type="string")
+ *         )
  *     )
  *  )
- *  @OA\Schema(
- *     schema="Error404",
+ * @OA\Response(
+ *     response="Error404",
  *     description="Not found",
- *     @OA\Property(property="errors",
- *         @OA\Property(property="status", type="integer", example="404"),
- *         @OA\Property(property="title", type="string")
+ *     @OA\JsonContent(
+ *         @OA\Property(property="errors",
+ *             @OA\Property(property="status", type="integer", example="404"),
+ *             @OA\Property(property="title", type="string")
+ *         )
  *     )
  *  )
- * @OA\Schema(
- *     schema="Error409",
+ * @OA\Response(
+ *     response="Error409",
  *     description="Conflict error",
- *     @OA\Property(property="errors",
- *         @OA\Property(property="status", type="integer", example="409"),
- *         @OA\Property(property="title", type="string")
+ *     @OA\JsonContent(
+ *         @OA\Property(property="errors",
+ *             @OA\Property(property="status", type="integer", example="409"),
+ *             @OA\Property(property="title", type="string")
+ *         )
  *     )
  *  )
-
  */
 class KernelExceptionSubscriber implements EventSubscriberInterface
 {

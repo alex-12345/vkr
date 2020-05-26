@@ -10,7 +10,7 @@ class ApiResponse extends JsonResponse
     public static function createSuccessResponse($data, $meta = null)
     {
         if(is_null($data)){
-            return new static(null);
+            return new static([]);
         }
         $responseData = ["data" => $data];
         ($meta)? $responseData["meta"] = $meta : null;
