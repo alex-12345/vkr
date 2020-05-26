@@ -1,13 +1,17 @@
 <template>
     <md-card>
-      <md-card-header>
-        <md-avatar>
-            <img src="https://vuematerial.io/assets/examples/avatar.png" alt="Avatar">
-        </md-avatar>
+        <md-card-header>
+            <md-avatar>
+                <img src="https://vuematerial.io/assets/examples/avatar.png" alt="Avatar">
+            </md-avatar>
 
-        <div class="md-title">{{employee.surname}} {{employee.firstName}}</div>
-        <div class="md-subhead">Subtitle here</div>
+            <div class="md-title">{{employee.surname}} {{employee.firstName}}</div>
+            <div class="md-subhead">Subtitle here</div>
         </md-card-header>
+
+        <md-card-content>
+            {{employee.description}}
+        </md-card-content>
 
         <md-card-actions>
             <md-button v-on:click="openDialog">Написать</md-button>
