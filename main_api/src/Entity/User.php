@@ -63,7 +63,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $main_photo;
+    private ?string $mainPhoto;
 
     /**
      * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
@@ -73,7 +73,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      */
-    private ?bool $ban_status;
+    private ?bool $isLocked;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -83,15 +83,15 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $new_email;
+    private ?string $newEmail;
 
-    public function __construct(?string $firstName = null, ?string $secondName = null, ?string $email = null, ?string $password = null, array $roles = self::ROLE_USER, bool $isActive = false)
+    public function __construct()
     {
         $this->isActive = false;
         $this->description = null;
-        $this->main_photo = null;
+        $this->mainPhoto = null;
         $this->registration_date = new \DateTime();
-        $this->ban_status = false;
+        $this->isLocked = false;
     }
 
     public function getId(): ?int
@@ -116,9 +116,9 @@ class User implements UserInterface
      *
      * @see UserInterface
      */
-    public function getUsername(): string
+    public function getUsername(): int
     {
-        return (string) $this->email;
+        return (int) $this->id;
     }
 
     /**
@@ -206,12 +206,12 @@ class User implements UserInterface
 
     public function getMainPhoto(): ?string
     {
-        return $this->main_photo;
+        return $this->mainPhoto;
     }
 
-    public function setMainPhoto(?string $main_photo): self
+    public function setMainPhoto(?string $mainPhoto): self
     {
-        $this->main_photo = $main_photo;
+        $this->mainPhoto = $mainPhoto;
 
         return $this;
     }
@@ -228,14 +228,14 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getBanStatus(): ?bool
+    public function getIsLocked(): ?bool
     {
-        return $this->ban_status;
+        return $this->isLocked;
     }
 
-    public function setBanStatus(bool $ban_status): self
+    public function setIsLocked(bool $isLocked): self
     {
-        $this->ban_status = $ban_status;
+        $this->isLocked = $isLocked;
 
         return $this;
     }
@@ -254,12 +254,12 @@ class User implements UserInterface
 
     public function getNewEmail(): ?string
     {
-        return $this->new_email;
+        return $this->newEmail;
     }
 
-    public function setNewEmail(?string $new_email): self
+    public function setNewEmail(?string $newEmail): self
     {
-        $this->new_email = $new_email;
+        $this->newEmail = $newEmail;
 
         return $this;
     }

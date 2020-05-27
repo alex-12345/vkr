@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber\JWTSubscribers;
 
-use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Exception\LockedHttpException;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -24,24 +23,15 @@ use OpenApi\Annotations as OA;
  */
 class JWTCreatedListener implements EventSubscriberInterface
 {
-    private UserRepository $repository;
-
-    public function __construct(UserRepository $repository)
-    {
-        $this->repository = $repository;
-    }
-
     public function onJWTCreated(JWTCreatedEvent $event)
     {
         $user = $event->getUser();
-        if(!($user instanceof User)){
-            $user = $this->repository->findUserByEmail($user->getUsername());
-        }
         if(!$user->getIsActive()){
             throw new AccessDeniedHttpException('Email confirmation needed!');
         }
-
-        //TODO check ban
+        if($user->getIsLocked()){
+            throw new LockedHttpException('This user has been locked!');
+        }
     }
 
     public static function getSubscribedEvents()

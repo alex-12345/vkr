@@ -15,7 +15,7 @@ use OpenApi\Annotations as OA;
 
 /**
  * @OA\RequestBody(
- *     request="UpdateUserEmail",
+ *     request="NewEmailType",
  *     required=true,
  *     @OA\JsonContent(
  *         @OA\Property(property="link", type="link", example="http://client.sapechat.ru/confirmEmail"),
@@ -24,7 +24,7 @@ use OpenApi\Annotations as OA;
  * )
  */
 
-class NewEmailTypes extends AbstractType
+class NewEmailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {

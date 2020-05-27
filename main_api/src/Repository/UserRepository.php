@@ -5,7 +5,6 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
@@ -39,6 +38,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
+    public function save(User $user): void
+    {
+        $this->_em->persist($user);
+        $this->_em->flush();
+    }
+
 
     public function findSuperAdmin(): ?User
     {
@@ -54,6 +59,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     }
 
+    //using in provider
     public function findUserByEmail(string $email): ?User
     {
         return $this->createQueryBuilder('u')
@@ -66,33 +72,38 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
 
     }
-
-    public function findInvites(int $p_number, int $p_size) : Paginator
+    private function filterOutputWithPagination(int $pNumber, int $pSize, bool $isActive, bool $isLocked = false ):Paginator
     {
-        $firstResult = ($p_number-1) * $p_size;
-        $maxResult = $firstResult + $p_size;
+        $firstResult = ($pNumber-1) * $pSize;
+        $maxResult = $firstResult + $pSize;
 
         $entityManager = $this->getEntityManager();
         $query = $entityManager->createQuery('SELECT u
             FROM App\Entity\User u
-            WHERE u.isActive = :isActive
+            WHERE u.isActive = :isActive AND u.isLocked = :isLocked
             ORDER BY u.id DESC'
         )
-            ->setParameter('isActive', false)
+            ->setParameter('isActive', $isActive)
+            ->setParameter('isLocked', $isLocked)
             ->setFirstResult($firstResult)
             ->setMaxResults($maxResult);
         return $paginator = new Paginator($query, false);
     }
-
-    public function findInviteStatus(int $id) : ?array
+    public function findInvites(int $pNumber, int $pSize) : Paginator
     {
-        $entityManager = $this->getEntityManager();
-        $rsm = new ResultSetMappingBuilder($entityManager);
-        $rsm->addScalarResult('is_active', 'is_active');
-        $query = $entityManager->createNativeQuery('SELECT is_active FROM user WHERE id = ? AND is_active = 0 LIMIT 0, 1', $rsm);
-        $query->setParameter(1, $id);
-        return $query->getOneOrNullResult();
+        return self::filterOutputWithPagination($pNumber, $pSize, false);
     }
+
+    public function findActiveUsers(int $pNumber, int $pSize) : Paginator
+    {
+        return self::filterOutputWithPagination($pNumber, $pSize, true, false);
+    }
+
+    public function findLockedUsers(int $pNumber, int $pSize) : Paginator
+    {
+        return self::filterOutputWithPagination($pNumber, $pSize, true, true);
+    }
+
     public function findInvite(int $id) : ?User
     {
         return $this->createQueryBuilder('u')
@@ -126,8 +137,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('u')
             ->AndWhere('u.id = :id ')
             ->AndWhere('u.isActive = :isActive ')
+            ->AndWhere('u.isLocked = :isLocked ')
             ->setParameter('id', $id)
             ->setParameter('isActive', true)
+            ->setParameter('isLocked', false)
             ->getQuery()
             ->setFirstResult(0)
             ->setMaxResults(1)

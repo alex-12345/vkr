@@ -2,29 +2,24 @@
 declare(strict_types=1);
 namespace App\Security\Voters;
 
+use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use \App\Security\User as SessionUser;
-use \App\Entity\User as InvitedUser;
 
 class InviteVoter extends Voter
 {
-    const CREATE = 'create';
-    const GET = 'get';
-    const REMOVE = 'remove';
-
-    const SUBJECT = 'invites';
+    const MODIFY = 'modifyInvite';
 
     protected function supports(string $attribute, $subject)
     {
-        if (!in_array($attribute, [self::CREATE, self::GET, self::REMOVE])) {
+        if (!in_array($attribute, [self::MODIFY])) {
             return false;
         }
 
-        if (!$subject === self::SUBJECT) {
+        if (!$subject === User::class) {
             return false;
         }
-
         return true;
     }
 
@@ -36,26 +31,14 @@ class InviteVoter extends Voter
         }
 
         switch ($attribute) {
-            case self::CREATE:
-                return $this->canInvite($user);
-            case self::GET:
-                return $this->getInvite($user);
-            case self::REMOVE:
-                return $this->removeInvite($user);
+            case self::MODIFY:
+                return $this->modifyInvite($user, $subject);
         }
     }
 
-    private function canInvite(SessionUser $user)
+    private function modifyInvite(SessionUser $user, User $invite)
     {
-        return $this->getInvite($user);
+        return ($user->getRoles() !== $invite->getRoles()) && in_array($user->getRoles(), [$invite::ROLE_ADMIN, $invite::ROLE_SUPER_ADMIN]);
     }
 
-    private function removeInvite(SessionUser $user)
-    {
-        return $this->getInvite($user);
-    }
-
-    private function getInvite(SessionUser $user){
-        return in_array($user->getRoles(), [InvitedUser::ROLE_ADMIN, InvitedUser::ROLE_SUPER_ADMIN]);
-    }
 }

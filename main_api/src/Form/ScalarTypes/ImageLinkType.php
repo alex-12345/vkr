@@ -8,28 +8,29 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 use OpenApi\Annotations as OA;
 
 /**
  * @OA\RequestBody(
- *     request="UpdatePassword",
+ *     request="UpdateImageLink",
  *     required=true,
  *     @OA\JsonContent(
- *         @OA\Property(property="password", type="string", minimum="6", maximum="255")
+ *         @OA\Property(property="main_photo", type="link", example="http://photo.sapechat.ru/photo.jpg")
  *     )
  * )
  */
-class PasswordNonEncryptedType extends AbstractType
+
+class ImageLinkType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('password', TextType::class, [
+            ->add('main_photo', TextType::class, [
                 'constraints' => [
-                    new NotBlank(),
-                    new Length(['min' => 6, 'max' => 255])
+                    new Regex([
+                        'pattern' => '/^https?:\/\/\S+(?:jpg|jpeg|png)$/',
+                    ])
                 ]
             ]);
     }

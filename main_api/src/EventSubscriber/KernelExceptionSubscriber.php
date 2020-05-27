@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Exception\LockedHttpException;
 use App\Response\ApiResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -54,6 +55,16 @@ use OpenApi\Annotations as OA;
  *         )
  *     )
  *  )
+ * @OA\Response(
+ *     response="Error423",
+ *     description="resource has loked",
+ *     @OA\JsonContent(
+ *         @OA\Property(property="errors",
+ *             @OA\Property(property="status", type="integer", example="423"),
+ *             @OA\Property(property="title", type="string")
+ *         )
+ *     )
+ *  )
  */
 class KernelExceptionSubscriber implements EventSubscriberInterface
 {
@@ -72,12 +83,14 @@ class KernelExceptionSubscriber implements EventSubscriberInterface
         if($exception instanceof ConflictHttpException){
             $event->setResponse(ApiResponse::createFailureResponse($exception->getMessage(), ApiResponse::HTTP_CONFLICT));
         }
-
+        if($exception instanceof LockedHttpException){
+            $event->setResponse(ApiResponse::createFailureResponse($exception->getMessage(), ApiResponse::HTTP_LOCKED));
+        }
     }
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::EXCEPTION => 'onExceptionHandle'
+            KernelEvents::EXCEPTION => ['onExceptionHandle']
         ];
     }
 }

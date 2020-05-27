@@ -5,23 +5,28 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Events\UserChangesEmailEvent;
-use App\Form\ScalarTypes\ImageUrlType;
+use App\Events\UserLockedEvent;
+use App\Events\UserUnlockedEvent;
+use App\Exception\LockedHttpException;
+use App\Form\ScalarTypes\ImageLinkType;
 use App\Form\User\ConfirmEmailType;
-use App\Form\User\NewEmailTypes;
-use App\Form\ScalarTypes\PasswordNonEncryptedType;
+use App\Form\User\NewEmailType;
 use App\Form\ScalarTypes\UserDescriptionType;
+use App\Form\User\UpdatePasswordType;
+use App\Repository\UserRepository;
 use App\Response\ApiResponse;
 use App\Serializer\Normalizer\UserNormalizer;
 use App\Utils\Checker;
 use App\Utils\Encryptor;
 use App\Utils\LinkBuilder;
+use App\Utils\PaginationHelper;
 use App\Utils\TokenManuallyGenerator;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -37,30 +42,29 @@ class UserController extends AbstractController
      *     tags={"users"},
      *     description="Show superadmin",
      *     @OA\Parameter(ref="#/components/parameters/workspace_key"),
-     *     @OA\Response(response=200, ref="#/components/responses/UserFull"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserDetailed"),
      *     @OA\Response(response=403, ref="#/components/responses/Error403"),
      *     @OA\Response(response=404, ref="#/components/responses/Error404")
      * )
      *
      * @Route("/api/users/superadmin", methods={"GET"})
-     * @Entity(name="admin", expr="repository.findSuperAdmin()")
+     * @Entity(name="superadmin", expr="repository.findSuperAdmin()")
      */
-    public function showAdmin(?User $admin, Request $request, UserNormalizer $normalizer, Checker $checker)
+    public function showAdmin(?User $superadmin, Request $request, UserNormalizer $normalizer, Checker $checker)
     {
         $checker->checkAppSecret($request->get("workspace_key"));
 
-        if(is_null($admin)) throw new NotFoundHttpException('User with role "SUPER_ADMIN" not found');
+        if(is_null($superadmin)) throw new NotFoundHttpException('User with role "SUPER_ADMIN" not found');
 
-        return ApiResponse::createSuccessResponse($normalizer->normalize($admin, null, ['is_active', 'registration_date']));
+        return ApiResponse::createSuccessResponse($normalizer->normalize($superadmin, null, $normalizer::DETAILED_OUTPUT));
     }
 
     /**
      * @OA\Put(
-     *     path="/api/users/{id}/password",
+     *     path="/api/users/current/password",
      *     tags={"users"},
      *     security={{"bearer":{}}},
      *     description="Update user password",
-     *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdatePassword"),
      *     @OA\Response(
      *         response=200,
@@ -69,42 +73,37 @@ class UserController extends AbstractController
      *     ),
      *     @OA\Response(response=400, ref="#/components/responses/Error400"),
      *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
-     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
-     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     *     @OA\Response(response=423, ref="#/components/responses/Error423")
      * )
-     * @Route("/api/users/{id<\d+>}/password", methods={"PUT"})
-     * @Security("is_granted('editAccount', changingUser)")
+     * @Route("/api/users/current/password", methods={"PUT"})
      */
-    public function changeUserPassword(Request $request, User $changingUser, UserPasswordEncoderInterface $passwordEncoder)
+    public function changeUserPassword(Request $request, UserRepository $repository, UserPasswordEncoderInterface $passwordEncoder)
     {
-        //TODO add checking old password and check voter for 404 error
-        $form = $this->createForm(PasswordNonEncryptedType::class, $changingUser);
+        $changingUser = $repository->findActiveUser($this->getUser()->getId());
+        if(is_null($changingUser)) throw new LockedHttpException('User has been locked!');
 
-        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
+        $form = $this->createForm(UpdatePasswordType::class);
 
-            $newPassword = $changingUser->getPassword();
-            $changingUser->setPassword($passwordEncoder->encodePassword($changingUser, $newPassword));
+        if($form->submit($request->request->all())->isValid() && $passwordEncoder->isPasswordValid($changingUser, $form["old_password"]->getData())){
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($changingUser);
-            $em->flush();
+            $newPassword = $form["new_password"]->getData();
+            $repository->upgradePassword($changingUser, $passwordEncoder->encodePassword($changingUser, $newPassword));
 
             return ApiResponse::createSuccessResponse(
-                ['password' => $newPassword]
+                ['new_password' => $newPassword]
             );
         };
 
-        throw new BadRequestHttpException("Parameter 'password' not valid!") ;
+        throw new BadRequestHttpException("Bad data!") ;
     }
 
     /**
      * @OA\Put(
-     *     path="/api/users/{id}/main_photo",
+     *     path="/api/users/current/main_photo",
      *     tags={"users"},
      *     security={{"bearer":{}}},
      *     description="Update user main photo",
-     *     @OA\Parameter(ref="#/components/parameters/id"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/UpdateMainPhoto"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/UpdateImageLink"),
      *     @OA\Response(
      *         response=200,
      *         description="Success change user main photo",
@@ -114,22 +113,21 @@ class UserController extends AbstractController
      *     ),
      *     @OA\Response(response=400, ref="#/components/responses/Error400"),
      *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
-     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
-     *     @OA\Response(response=404, ref="#/components/responses/Error404")
+     *     @OA\Response(response=423, ref="#/components/responses/Error423")
      * )
-     * @Route("/api/users/{id<\d+>}/main_photo", methods={"PUT"})
-     * @Security("is_granted('editAccount', changingUser)")
+     * @Route("/api/users/current/main_photo", methods={"PUT"})
      */
-    public function changeUserMainPhoto(Request $request, User $changingUser)
+    public function changeUserMainPhoto(Request $request, UserRepository $repository)
     {
-        //TODO top
-        $form = $this->createForm(ImageUrlType::class, $changingUser);
+        $changingUser = $repository->findActiveUser($this->getUser()->getId());
 
-        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
+        if(is_null($changingUser)) throw new LockedHttpException('User has been locked!');
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($changingUser);
-            $em->flush();
+        $form = $this->createForm(ImageLinkType::class, $changingUser);
+
+        if($form->submit($request->request->all())->isValid()){
+
+            $repository->save($changingUser);
 
             return ApiResponse::createSuccessResponse(
                 ['main_photo' => $changingUser->getMainPhoto()]
@@ -141,11 +139,10 @@ class UserController extends AbstractController
     }
     /**
      * @OA\Put(
-     *     path="/api/users/{id}/description",
+     *     path="/api/users/current/description",
      *     tags={"users"},
      *     security={{"bearer":{}}},
      *     description="Update user description",
-     *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdateDescription"),
      *     @OA\Response(
      *         response=200,
@@ -156,21 +153,20 @@ class UserController extends AbstractController
      *     ),
      *     @OA\Response(response=400, ref="#/components/responses/Error400"),
      *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
-     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
-     *     @OA\Response(response=404, ref="#/components/responses/Error404")
+     *     @OA\Response(response=423, ref="#/components/responses/Error423")
      * )
-     * @Route("/api/users/{id<\d+>}/description", methods={"PUT"})
-     * @Security("is_granted('editAccount', changingUser)")
+     * @Route("/api/users/current/description", methods={"PUT"})
      */
-    public function changeUserDescription(Request $request, User $changingUser)
+    public function changeUserDescription(Request $request, UserRepository $repository)
     {
+        $changingUser = $repository->findActiveUser($this->getUser()->getId());
+        if(is_null($changingUser)) throw new LockedHttpException('User has been locked!');
+
         $form = $this->createForm(UserDescriptionType::class, $changingUser);
 
-        if($form->submit($request->request->all())->handleRequest(($request))->isValid()){
+        if($form->submit($request->request->all())->isValid()){
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($changingUser);
-            $em->flush();
+            $repository->save($changingUser);
 
             return ApiResponse::createSuccessResponse(
                 ['description' => $changingUser->getDescription()]
@@ -182,12 +178,11 @@ class UserController extends AbstractController
 
     /**
      * @OA\Post(
-     *     path="/api/users/{id}/email",
+     *     path="/api/users/current/email",
      *     tags={"users"},
      *     security={{"bearer":{}}},
      *     description="create request on user email change",
-     *     @OA\Parameter(ref="#/components/parameters/id"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/UpdateUserEmail"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/NewEmailType"),
      *     @OA\Response(
      *         response=200,
      *         description="Success create request",
@@ -197,38 +192,30 @@ class UserController extends AbstractController
      *     ),
      *     @OA\Response(response=400, ref="#/components/responses/Error400"),
      *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
-     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
-     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
-     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     *     @OA\Response(response=409, ref="#/components/responses/Error409"),
+     *     @OA\Response(response=423, ref="#/components/responses/Error423")
      * )
-     * @Route("/api/users/{id<\d+>}/email", methods={"POST"})
-     * @Security("is_granted('editAccount', changingUser)")
+     * @Route("/api/users/current/email", methods={"POST"})
      */
-    public function createNewUserEmail(Request $request, User $changingUser, LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher)
+    public function createNewUserEmail(Request $request, UserRepository $repository, LinkBuilder $linkBuilder, EventDispatcherInterface $dispatcher)
     {
-        $form = $this->createForm(NewEmailTypes::class);
+        $changingUser = $repository->findActiveUser($this->getUser()->getId());
+        if(is_null($changingUser)) throw new LockedHttpException('User has been locked!');
 
-        if($form->submit($request->request->all())->handleRequest(($request))->isValid()) {
+        $form = $this->createForm(NewEmailType::class);
+
+        if($form->submit($request->request->all())->isValid()) {
             $newEmail = $form->getData()['new_email'];
             if($changingUser->getEmail() === $newEmail) throw new ConflictHttpException("This user already have this email!");
+            $conflictUser = $repository->findUserByEmail($newEmail);
+            if(!is_null($conflictUser) && $conflictUser->getIsActive()) throw new ConflictHttpException('User with this email already exist and confirmed');
 
             $link = $form->getData()['link'];
             $changingUser->setNewEmail($newEmail);
-            $em = $this->getDoctrine()->getManager();
 
-            $conflictUser = $em->getRepository(User::class)->findUserByEmail($newEmail);
-            if(!is_null($conflictUser)){
-                if($conflictUser->getisActive()){
-                    throw new ConflictHttpException('User with this email already exist and confirmed');
-                }
-                else{
-                    $em->remove($conflictUser);
-                }
-            }
-            $em->persist($changingUser);
-            $em->flush();
+            $repository->save($changingUser);
 
-            $link = $linkBuilder->getInviteConfirmLink($link, ['id' => $changingUser->getId(), 'subject'=> 'switchEmail']);
+            $link = $linkBuilder->getInviteConfirmLink($link, ['id' => $changingUser->getId(), 'email'=> $newEmail]);
             $dispatcher->dispatch(new UserChangesEmailEvent($changingUser, $link));
 
             return ApiResponse::createSuccessResponse(['new_email' => $newEmail]);
@@ -247,27 +234,32 @@ class UserController extends AbstractController
      *     @OA\Response(response=400, ref="#/components/responses/Error400"),
      *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
      *     @OA\Response(response=404, ref="#/components/responses/Error404"),
-     *     @OA\Response(response=409, ref="#/components/responses/Error409")
+     *     @OA\Response(response=409, ref="#/components/responses/Error409"),
+     *     @OA\Response(response=423, ref="#/components/responses/Error423")
      * )
      * @Route("/api/users/{id<\d+>}/email", methods={"PUT"})
      */
-    public function changeUserEmail(User $changingUser, Request $request, Encryptor $encryptor, TokenManuallyGenerator $tokenManuallyGenerator)
+    public function changeUserEmail(?User $changingUser, Request $request, Encryptor $encryptor, TokenManuallyGenerator $tokenManuallyGenerator)
     {
+        if(is_null($changingUser)) throw new NotFoundHttpException('User not founded!');
         $form = $this->createForm(ConfirmEmailType::class);
-        if($form->submit($request->request->all())->handleRequest(($request))->isValid()) {
+        if($form->submit($request->request->all())->isValid()) {
             $hash = $form->getData()['hash'];
-            $computedCheckSum = $encryptor->computedCheckSim(['id' => $changingUser->getId(), 'subject'=> 'switchEmail']);
             $newEmail = $changingUser->getNewEmail();
-            if($hash ===  $computedCheckSum && !is_null($newEmail))
+
+            $computedCheckSum = $encryptor->computedCheckSim(['id' => $changingUser->getId(), 'email'=> $newEmail]);
+            if($hash === $computedCheckSum)
             {
                 $em = $this->getDoctrine()->getManager();
                 $conflictUser = $em->getRepository(User::class)->findUserByEmail($newEmail);
                 if(!is_null($conflictUser)){
-                    if($conflictUser->getisActive()){
+                    if($conflictUser->getIsActive()){
                         throw new ConflictHttpException('User with this email already exist and confirmed');
                     }
                     else{
+                        //TODO make transaction here
                         $em->remove($conflictUser);
+                        $em->flush();
                     }
                 }
                 $changingUser->setEmail($newEmail);
@@ -278,35 +270,90 @@ class UserController extends AbstractController
 
                 return $tokenManuallyGenerator->JWTResponseGenerate($changingUser);
             };
-            throw new NotFoundHttpException('User with this parameters not found');
+            throw new AccessDeniedHttpException("Bad hash");
         }
         throw new BadRequestHttpException('Bad content!');
     }
 
 
     /**
+     * @OA\Get(
+     *     path="/api/users/{id}",
+     *     tags={"users"},
+     *     description="Show user",
+     *     security={{"bearer":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(response=200, ref="#/components/responses/UserDetailed"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
+     * )
      * @Route("/api/users/{id<\d+>}", methods={"GET"})
      * @Entity(name="shownUser", expr="repository.findActiveUser(id)")
      */
-    public function showUser(User $shownUser, UserNormalizer $normalizer)
+    public function showUser(?User $shownUser, UserNormalizer $normalizer)
     {
+        if(is_null($shownUser)) throw new NotFoundHttpException('User not founded!');
+        $option = ($this->getUser()->getId() === $shownUser->getId())? $normalizer::DETAILED_OUTPUT : $normalizer::FULL_OUTPUT;
         return ApiResponse::createSuccessResponse(
             $normalizer->normalize(
-                $shownUser, null, ['is_active', 'registration_date']
+                $shownUser, null, $option
             )
         );
     }
 
     /**
-     * @Route("/api/users", methods={"GET"})
+     * @OA\Get(
+     *     path="/api/users/current",
+     *     tags={"users"},
+     *     description="Show user",
+     *     security={{"bearer":{}}},
+     *     @OA\Response(response=200, ref="#/components/responses/UserDetailed"),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=423, ref="#/components/responses/Error423")
+     * )
+     * @Route("/api/users/current", methods={"GET"})
+     * @Entity(name="shownUser", expr="repository.findActiveUser(id)")
      */
-    public function showUsers()
+    public function showCurrentUser(UserRepository $repository, UserNormalizer $normalizer)
     {
-        //TODO implement this method\maybe via search function
-        return new Response();
+        $currentUser = $repository->findActiveUser($this->getUser()->getId());
+        if(is_null($currentUser)) throw new LockedHttpException('User has been locked!');
+        return ApiResponse::createSuccessResponse(
+            $normalizer->normalize(
+                $currentUser, null, $normalizer::FULL_OUTPUT
+            )
+        );
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/users",
+     *     tags={"users"},
+     *     description="Show users",
+     *     security={{"bearer":{}}},
+     *     @OA\Parameter(name="page[size]", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="page[number]", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, ref="#/components/responses/UserCollection"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404"),
+     * )
+     * @Route("/api/users", methods={"GET"})
+     */
+    public function showUsers(Request $request, UserNormalizer $normalizer, PaginationHelper $paginationHelper)
+    {
+        $pageParams = $paginationHelper->getPageAndSize($request);
+        $paginator = $this->getDoctrine()->getRepository(User::class)->findActiveUsers($pageParams->getNumber(), $pageParams->getSize());
+        $usersAmount = count($paginator);
+        if($usersAmount){
+            return ApiResponse::createSuccessResponse($paginationHelper->paginate($paginator, $normalizer), ['count'=> $usersAmount]);
+        }
+        throw new NotFoundHttpException('Invite not found!');
+    }
+
+    /**
+     *
      * @Route("/api/user/{id<\d+>}/roles", methods={"PUT"})
      * Security("is_granted('changeRoles', changingUser)")
      */
@@ -316,21 +363,73 @@ class UserController extends AbstractController
         return new Response();
     }
     /**
-     * @Route("/api/users/{id<\d+>}/ban", methods={"POST"})
+     * @OA\Post(
+     *     path="/api/users/{id}/lock",
+     *     tags={"users"},
+     *     security={{"bearer":{}}},
+     *     description="Locking user",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success locking user",
+     *         @OA\JsonContent(@OA\Property(property="data", @OA\Property(property="is_locked", type="boolean")))
+     *     ),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
+     * )
+     * @Route("/api/users/{id<\d+>}/lock", methods={"POST"})
+     * @Entity(name="lockableUser", expr="repository.findActiveUser(id)")
      */
-    public function createUserBan()
+    public function createUserLock(?User $lockableUser, EventDispatcherInterface $dispatcher)
     {
-        //todo need implements this method
-        return new Response();
+        if(is_null($lockableUser)) throw new NotFoundHttpException('User not Found!');
+        $this->denyAccessUnlessGranted('modifyUserLock', $lockableUser);
+        $lockableUser->setIsLocked(true);
+
+        $this->getDoctrine()->getRepository(User::class)->save($lockableUser);
+
+        $dispatcher->dispatch(new UserLockedEvent($lockableUser));
+
+        return ApiResponse::createSuccessResponse(
+            ['is_locked' => true]
+        );
     }
 
     /**
-     * @Route("/api/users/{id<\d+>}/ban", methods={"DELETE"})
+     * @OA\Delete(
+     *     path="/api/users/{id}/lock",
+     *     tags={"users"},
+     *     security={{"bearer":{}}},
+     *     description="Unlocking user",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success unlocking user",
+     *         @OA\JsonContent(@OA\Property(property="data", @OA\Property(property="is_locked", type="boolean")))
+     *     ),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
+     * )
+     * @Route("/api/users/{id<\d+>}/lock", methods={"DELETE"})
+     * @Entity(name="lockableUser", expr="repository.findActiveUser(id)")
      */
-    public function removeUserBan()
+    public function removeUserLock(?User $lockableUser, EventDispatcherInterface $dispatcher)
     {
-        //todo need implements this method
-        return new Response();
+        if(is_null($lockableUser)) throw new NotFoundHttpException('User not Found!');
+        $this->denyAccessUnlessGranted('modifyUserLock', $lockableUser);
+        $lockableUser->setIsLocked(false);
+
+        $this->getDoctrine()->getRepository(User::class)->save($lockableUser);
+
+        $dispatcher->dispatch(new UserUnlockedEvent($lockableUser));
+
+        return ApiResponse::createSuccessResponse(
+            ['is_locked' => false]
+        );
     }
 
 

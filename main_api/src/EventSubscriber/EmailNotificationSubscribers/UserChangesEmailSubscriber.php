@@ -28,7 +28,7 @@ class UserChangesEmailSubscriber extends AbstractEmailNotificationSubscriber imp
                 'link' => $event->getLink(),
                 'workspace_name' => $this->workspace_name
             ]);
-
+        print($event->getLink());
         //$this->mailer->send($email);
     }
 

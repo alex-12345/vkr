@@ -9,10 +9,10 @@ use OpenApi\Annotations as OA;
  *     version="1.0"
  * )
  * @OA\Server(
- *     url="http://localhost:8000"
+ *     url="http://sapechat.ru"
  * )
  * @OA\Server(
- *     url="http://sapechat.ru"
+ *     url="http://localhost:8000"
  * )
  * @OA\Tag(
  *     name="auth",
@@ -77,7 +77,8 @@ use OpenApi\Annotations as OA;
  *      @OA\Response(response=200, ref="#/components/responses/SuccessJWT"),
  *      @OA\Response(response=400, ref="#/components/responses/Error400"),
  *      @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
- *      @OA\Response(response=403, ref="#/components/responses/Error403NeedEmailConfirm")
+ *      @OA\Response(response=403, ref="#/components/responses/Error403NeedEmailConfirm"),
+ *      @OA\Response(response=423, ref="#/components/responses/Error423")
  * )
  * @OA\Post(
  *     path="/api/auth/token/refresh",
@@ -88,7 +89,8 @@ use OpenApi\Annotations as OA;
  *     @OA\Response(response=200, ref="#/components/responses/SuccessJWT"),
  *     @OA\Response(response=400, ref="#/components/responses/Error400"),
  *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
- *     @OA\Response(response=403, ref="#/components/responses/Error403NeedEmailConfirm")
+ *     @OA\Response(response=403, ref="#/components/responses/Error403NeedEmailConfirm"),
+ *     @OA\Response(response=423, ref="#/components/responses/Error423")
  *
  * )
  *

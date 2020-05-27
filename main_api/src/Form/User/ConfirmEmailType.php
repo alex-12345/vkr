@@ -3,10 +3,13 @@ declare(strict_types=1);
 
 namespace App\Form\User;
 
-use App\Form\ScalarTypes\PasswordNonEncryptedType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use OpenApi\Annotations as OA;
 
@@ -24,27 +27,32 @@ use OpenApi\Annotations as OA;
  * )
  */
 
-class ConfirmEmailType extends PasswordNonEncryptedType
+class ConfirmEmailType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        parent::buildForm($builder, $options);
-        (!$options['password'])? $builder->remove('password'):null;
         $builder
             ->add('hash', TextType::class, [
                 'constraints' => [
                     new NotBlank()
                 ]
             ]);
+        if($options['password']){
+            $builder->add('password', TextType::class, [
+                'constraints' => [
+                    new NotBlank(),
+                    new Length(['min' => 6, 'max' => 255])
+                ]
+            ]);
+        }
+
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        parent::configureOptions($resolver);
-        $resolver->setDefaults(
-            $resolver->getDefinedOptions() + [
-                'password' => false
-            ]
-        );
+        $resolver->setDefaults([
+            'csrf_protection' => false,
+            'password' => false
+        ]);
     }
 }

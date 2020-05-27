@@ -15,7 +15,7 @@ use OpenApi\Annotations as OA;
  *     request="UpdateDescription",
  *     required=true,
  *     @OA\JsonContent(
- *         @OA\Property(property="description", type="string", maximum="255")
+ *         @OA\Property(property="description", type="string", maxLength=255)
  *     )
  * )
  */

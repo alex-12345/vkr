@@ -31,7 +31,7 @@ security:
                 success_handler:          lexik_jwt_authentication.handler.authentication_success
                 failure_handler:          lexik_jwt_authentication.handler.authentication_failure
         anonymous_pages:
-            pattern: ^/api/(auth/token/refresh|workspace/info|users/admin|invites/(admin|([0-9]+)/status))
+            pattern: ^/api/(auth/token/refresh|workspace/info|users/superadmin|invites/(superadmin|([0-9]+)/status))
             stateless: true
             anonymous: true
         api:
@@ -48,8 +48,8 @@ security:
 
     access_control:
         - { path: ^/api/auth/(login|token/refresh), roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/(workspace/info|invites/(admin|([0-9]+)/status)), roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/users/admin, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/(workspace/info|invites/(superadmin|([0-9]+)/status)), roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/users/superadmin, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/users/([0-9]+)/email, methods: [PUT], roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api, roles: ROLE_USER }
     role_hierarchy:

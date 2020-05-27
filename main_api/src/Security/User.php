@@ -6,19 +6,19 @@ use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 
 class User implements JWTUserInterface
 {
-    private string $email;
+    private int $id;
     private array $roles;
 
-    public function __construct($email, array $roles = [])
+    public function __construct($id, array $roles = [])
     {
-        $this->email = $email;
+        $this->id = $id;
         $this->roles = $roles;
     }
 
-    public static function createFromPayload($username, array $payload)
+    public static function createFromPayload($id, array $payload)
     {
         return new self(
-            $username,
+            $id,
             $payload['roles']
         );
     }
@@ -29,7 +29,12 @@ class User implements JWTUserInterface
     }
     public function getUsername()
     {
-        return $this->email;
+        return $this->id;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     public function getPassword()

@@ -27,8 +27,8 @@ class UserCreatedSubscriber extends AbstractEmailNotificationSubscriber implemen
                 'link' => $event->getLink(),
                 'workspace_name' => $this->workspace_name
             ]);
-
-        $this->mailer->send($email);
+        print($event->getLink());
+        //$this->mailer->send($email);
     }
 
     public static function getSubscribedEvents()
