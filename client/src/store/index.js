@@ -10,6 +10,8 @@ import user from './modules/user'
 import chats from './modules/chats'
 import messages from './modules/messages'
 import employees from './modules/employees'
+import tokenStorage from './modules/tokenStorage'
+import settings from './modules/settings'
 
 Vue.use(Vuex)
 
@@ -24,6 +26,8 @@ export default new Vuex.Store({
         user,
         chats,
         messages,
-        employees
+        employees,
+        tokenStorage,
+        settings
     }
 })

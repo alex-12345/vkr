@@ -6,12 +6,10 @@ export default {
             "username": '',
             "password": ''
         },
-        token: localStorage.getItem("user-token") || "",
         status: "",
     },
     getters: {
         getUser: state => state.user,
-        isAuthenticated: state => !!state.token,
         authStatus: state => state.status
     },
     actions: {
@@ -23,26 +21,40 @@ export default {
                 ctx.commit('updateAuthRequest')
                 axios.post('http://sapechat.ru/api/auth/login_check', user)
                 .then(response => {
-                    const token = response.data.token
-                    localStorage.setItem('user-token', token)
-                    axios.defaults.headers.common['Authorization'] = token
-                    ctx.commit('updateAuthSuccess', token)
+                    console.log('response: ', response)
+                    ctx.commit('updateToken', response.data.token)
+                    ctx.commit('updateRefreshToken', response.data.refresh_token)
+
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+
+                    ctx.commit('updateAuthSuccess')
                     ctx.commit('updateSubmitStatusLogin', 'OK')
                     resolve (response.data)
                 })
                 .catch(error => {
                     console.log('error: ', error)
-                    localStorage.removeItem('user-token')
+
+                    ctx.commit('deleteToken')
+                    ctx.commit('deleteRefreshToken')
+
                     ctx.commit('updateAuthSuccess')
-                    ctx.commit('updateSubmitStatusLogin', 'ERROR')
+                    if (error.response.status == 401) {
+                        ctx.commit('updateSubmitStatusLogin', 'AUTH_ERROR')
+                    }
+                    else if (error.response.status == 403) {
+                        ctx.commit('updateSubmitStatusLogin', 'EMAIL_NOT_CONFIRM')
+                    }
+                    else if (error.response.status == 423) {
+                        ctx.commit('updateSubmitStatusLogin', 'USER_IS_BLOCKED')
+                    }
                     reject (error.data)
                 });
             });
         },
         authLogout(ctx) {
             return new Promise(function(resolve) {
-                ctx.commit('updateAuthLogout')
-                localStorage.removeItem('user-token')
+                ctx.commit('deleteToken')
+                ctx.commit('deleteRefreshToken')
                 delete axios.defaults.headers.common['Authorization']
                 resolve()
             })
@@ -56,15 +68,11 @@ export default {
         updateAuthRequest(state) {
             state.status = 'loading'
         },
-        updateAuthSuccess(state, token) {
+        updateAuthSuccess(state) {
             state.status = 'success'
-            state.token = token
         },
         updateAuthError(state) {
             state.status = 'error'
         },
-        updateAuthLogout(state) {
-            state.token = "";
-        }
     }
 }

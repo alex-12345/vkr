@@ -10,6 +10,9 @@
         </button>
         <p class="typo__p" v-if="submitStatus === 'OK'">Спасибо за регистрацию!</p>
         <p class="typo__p" v-if="submitStatus === 'ERROR'">Пожалуйста, заполните форму правильно.</p>
+        <p class="typo__p" v-if="submitStatus === 'AUTH_ERROR'">Не верный email или пароль.</p>
+        <p class="typo__p" v-if="submitStatus === 'EMAIL_NOT_CONFIRM'">Email не подтверждён.</p>
+        <p class="typo__p" v-if="submitStatus === 'USER_IS_BLOCKED'">Пользователь заблокирован.</p>
         <div class="lds-ellipsis" v-if="submitStatus === 'PENDING'">
             <div></div>
             <div></div>
