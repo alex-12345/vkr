@@ -21,7 +21,6 @@ export default {
                 ctx.commit('updateAuthRequest')
                 axios.post('http://sapechat.ru/api/auth/login_check', user)
                 .then(response => {
-                    console.log('response: ', response)
                     ctx.commit('updateToken', response.data.token)
                     ctx.commit('updateRefreshToken', response.data.refresh_token)
 
@@ -32,8 +31,6 @@ export default {
                     resolve (response.data)
                 })
                 .catch(error => {
-                    console.log('error: ', error)
-
                     ctx.commit('deleteToken')
                     ctx.commit('deleteRefreshToken')
 
