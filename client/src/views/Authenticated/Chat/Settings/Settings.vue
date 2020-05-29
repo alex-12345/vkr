@@ -1,5 +1,6 @@
 <template>
     <div class="settings">
+        <SendInvitation />
         <ChangeEmail />
         <ChangePassword />
         <ChangeDescription />
@@ -13,7 +14,8 @@
     import ChangePassword from '@/views/Authenticated/Chat/Settings/ChangePassword';
     import ChangeDescription from '@/views/Authenticated/Chat/Settings/ChangeDescription';
     import ChangeEmail from '@/views/Authenticated/Chat/Settings/ChangeEmail';
-    import {mapActions} from 'vuex'
+    import SendInvitation from '@/views/Authenticated/Chat/Settings/SendInvitation';
+    import { mapActions } from 'vuex'
 
     export default {
         name: 'FileField',
@@ -32,7 +34,8 @@
             ChangeAvatar,
             ChangePassword,
             ChangeDescription,
-            ChangeEmail
+            ChangeEmail,
+            SendInvitation
         }
     }
 </script>

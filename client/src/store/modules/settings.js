@@ -2,16 +2,32 @@ import axios from 'axios'
 
 export default {
     state: {
-        sending: false,
+        sendingPassword: false,
+        sendingCreateUser: false,
         passwordChanged: false,
         worked: false
     },
     getters: {
-        sendingPassword: state => state.sending,
+        sendingPassword: state => state.sendingPassword,
+        sendingCreateUser: state => state.CreateUser,
         passwordChanged: state => state.passwordChanged,
         passwordWorked: state => state.worked,
     },
     actions: {
+        createUser(ctx, admin) {
+            console.log('admin: ', admin)
+            return new Promise(function(resolve, reject) {
+                axios.post('http://sapechat.ru/api/invites', admin)
+                .then(response => {
+                    ctx.commit('updateSendingCreateUser')
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    ctx.commit('updateSendingCreateUser')
+                    reject (error.data)
+                });
+            });
+        },
         changePassword(ctx, pass) {
             return new Promise(function(resolve, reject) {
                 axios.put('http://sapechat.ru/api/users/current/password', pass)
@@ -35,6 +51,9 @@ export default {
         changeSendingPassword(ctx) {
             ctx.commit('updateSendingPassword')
         },
+        changeSendingCreateUser(ctx) {
+            ctx.commit('updateSendingCreateUser')
+        },
         changePasswordChanged(ctx, value) {
             ctx.commit('updatePasswordChanged', value)
         },
@@ -44,7 +63,10 @@ export default {
     },
     mutations: {
         updateSendingPassword(state) {
-            state.sending = !state.sending
+            state.sendingPassword = !state.sendingPassword
+        },
+        updateSendingCreateUser(state) {
+            state.sendingCreateUser = !state.sendingCreateUser
         },
         updatePasswordChanged(state, value) {
             state.passwordChanged = value

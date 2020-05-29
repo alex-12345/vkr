@@ -21,6 +21,7 @@ export default {
                 ctx.commit('updateAuthRequest')
                 axios.post('http://sapechat.ru/api/auth/login_check', user)
                 .then(response => {
+                    //Вызов мутаций из tokenStorage.js
                     ctx.commit('updateToken', response.data.token)
                     ctx.commit('updateRefreshToken', response.data.refresh_token)
 

@@ -43,7 +43,11 @@ export default new Router({
                 {
                     path: 'registrationUser',
                     component: () => import('./views/NotAuthenticated/RegistrationUserPage')
-                } 
+                },
+                {
+                    path: 'confirm',
+                    component: () => import('./views/NotAuthenticated/Confirm')
+                }, 
             ]
         },
         {
