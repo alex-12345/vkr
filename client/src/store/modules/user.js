@@ -13,8 +13,8 @@ export default {
         isActiveUser: localStorage.getItem("is_active") || null,
         registrationDateUser: localStorage.getItem("registration_date") || null,
         initials: {
-            first: '',
-            second: '',
+            first: localStorage.getItem("first_name")[0] || '',
+            second: localStorage.getItem("second_name")[0] || '',
         }
     },
     getters: {
