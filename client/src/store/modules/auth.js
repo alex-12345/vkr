@@ -53,6 +53,7 @@ export default {
             return new Promise(function(resolve) {
                 ctx.commit('deleteToken')
                 ctx.commit('deleteRefreshToken')
+                ctx.commit('deleteUser')
                 delete axios.defaults.headers.common['Authorization']
                 resolve()
             })

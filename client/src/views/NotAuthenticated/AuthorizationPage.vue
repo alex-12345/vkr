@@ -18,6 +18,7 @@
 </template>
 
 <script>
+    import axios from 'axios'
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
     import { required, minLength, ipAddress, email } from 'vuelidate/lib/validators'
@@ -62,7 +63,8 @@
                 'changeSubmitStatusLogin', 
                 'changeHeaderItems',
                 'authRequest',
-                'addUser'
+                'addUser',
+                'getCurrentUserInfo'
             ]),
             processValue: function (answer) {
                 if (answer.title === 'Имя')
@@ -105,6 +107,8 @@
                     this.addUser({name: this.emailLogin, pass: this.passwordLogin})
                     this.authRequest(this.getUser).then(() => {
                         this.changeSubmitStatusLogin('')
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
+                        this.getCurrentUserInfo()
                         this.$router.push("/chat");
                     })
                 }

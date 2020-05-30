@@ -1,8 +1,8 @@
 <template>
     <div class="userArea">
         <div class="avatar">
-            <md-avatar>
-                <img src="https://placeimg.com/40/40/people/5" alt="People">
+            <md-avatar class="md-avatar-icon">
+                <md-ripple>{{initials.second}} {{initials.first}}</md-ripple>
             </md-avatar>
         </div>
         <div class="settings">
@@ -15,7 +15,7 @@
         </div>
         <div class="user">
             <p class="fullName">{{secondNameUser}} {{nameUser}}</p>
-            <p class="tag">#что_то_будет</p>
+            <p class="tag">{{emailUser}}</p>
         </div>
     </div>
 </template>
@@ -27,11 +27,16 @@
         computed: mapGetters([
             "showChats",
             "secondNameUser",
-            "nameUser"
+            "nameUser",
+            "avatarUser",
+            "emailUser",
+            "idUser",
+            'initials'
         ]),
         methods: {
             ...mapActions([
                 'changeShowChats',
+                'getCurrentUserInfo',
             ]),
             settings() {
                 if (this.showChats) {

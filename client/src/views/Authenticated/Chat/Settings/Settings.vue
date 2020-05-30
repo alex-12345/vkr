@@ -1,6 +1,6 @@
 <template>
     <div class="settings">
-        <SendInvitation />
+        <SendInvitation v-if="rolesUser == 'ROLE_SUPER_ADMIN'"/>
         <ChangeEmail />
         <ChangePassword />
         <ChangeDescription />
@@ -15,10 +15,13 @@
     import ChangeDescription from '@/views/Authenticated/Chat/Settings/ChangeDescription';
     import ChangeEmail from '@/views/Authenticated/Chat/Settings/ChangeEmail';
     import SendInvitation from '@/views/Authenticated/Chat/Settings/SendInvitation';
-    import { mapActions } from 'vuex'
+    import { mapGetters, mapActions } from 'vuex'
 
     export default {
-        name: 'FileField',
+        name: 'Settings',
+        computed: mapGetters([
+            "rolesUser",
+        ]),
         methods: {
             ...mapActions([
                 'authLogout',

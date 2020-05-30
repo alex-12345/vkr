@@ -9,7 +9,7 @@ export default {
     },
     getters: {
         sendingPassword: state => state.sendingPassword,
-        sendingCreateUser: state => state.CreateUser,
+        sendingCreateUser: state => state.sendingCreateUser,
         passwordChanged: state => state.passwordChanged,
         passwordWorked: state => state.worked,
     },
