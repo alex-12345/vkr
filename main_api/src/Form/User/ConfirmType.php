@@ -4,18 +4,16 @@ declare(strict_types=1);
 namespace App\Form\User;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use OpenApi\Annotations as OA;
 
 /**
  * @OA\Schema(
- *     schema="ConfirmEmail",
+ *     schema="ConfirmWithPassword",
  *     @OA\Property(property="hash", type="string"),
  *     @OA\Property(property="password", type="string")
  * )
@@ -23,11 +21,17 @@ use OpenApi\Annotations as OA;
  *     request="confirmInvite",
  *     required=true,
  *     description="Data for confirm user or superadmin email. If the user has the super admin role, remove the password property.",
- *     @OA\JsonContent(ref="#/components/schemas/ConfirmEmail")
+ *     @OA\JsonContent(ref="#/components/schemas/ConfirmWithPassword")
+ * )
+ * @OA\RequestBody(
+ *     request="confirmRecovery",
+ *     required=true,
+ *     description="Data for confirm recovery user password",
+ *     @OA\JsonContent(ref="#/components/schemas/ConfirmWithPassword")
  * )
  */
 
-class ConfirmEmailType extends AbstractType
+class ConfirmType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {

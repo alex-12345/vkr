@@ -19,16 +19,20 @@ use OpenApi\Annotations as OA;
  *     description="Operations about auth",
  * )
  * @OA\Tag(
- *     name="users",
- *     description="Operations about users",
+ *     name="workspace",
+ *     description="Operations about workspace"
  * )
  * @OA\Tag(
  *     name="invites",
  *     description="Operations about invites"
  * )
  * @OA\Tag(
- *     name="workspace",
- *     description="Operations about workspace"
+ *     name="users",
+ *     description="Operations about users",
+ * )
+ * @OA\Tag(
+ *     name="recovery",
+ *     description="Operations about recovery"
  * )
  * @OA\Parameter(
  *     name="id",

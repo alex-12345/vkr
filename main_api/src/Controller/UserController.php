@@ -9,8 +9,9 @@ use App\Events\UserLockedEvent;
 use App\Events\UserUnlockedEvent;
 use App\Exception\LockedHttpException;
 use App\Form\ScalarTypes\ImageLinkType;
-use App\Form\User\ConfirmEmailType;
-use App\Form\User\NewEmailType;
+use App\Form\ScalarTypes\UserRolesType;
+use App\Form\User\ConfirmType;
+use App\Form\User\EmailWIthLinkType;
 use App\Form\ScalarTypes\UserDescriptionType;
 use App\Form\User\UpdatePasswordType;
 use App\Repository\UserRepository;
@@ -22,10 +23,10 @@ use App\Utils\LinkBuilder;
 use App\Utils\PaginationHelper;
 use App\Utils\TokenManuallyGenerator;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -182,7 +183,7 @@ class UserController extends AbstractController
      *     tags={"users"},
      *     security={{"bearer":{}}},
      *     description="create request on user email change",
-     *     @OA\RequestBody(ref="#/components/requestBodies/NewEmailType"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/NewEmailWIthLinkType"),
      *     @OA\Response(
      *         response=200,
      *         description="Success create request",
@@ -202,7 +203,7 @@ class UserController extends AbstractController
         $changingUser = $repository->findActiveUser($this->getUser()->getId());
         if(is_null($changingUser)) throw new LockedHttpException('User has been locked!');
 
-        $form = $this->createForm(NewEmailType::class);
+        $form = $this->createForm(EmailWIthLinkType::class);
 
         if($form->submit($request->request->all())->isValid()) {
             $newEmail = $form->getData()['new_email'];
@@ -242,7 +243,7 @@ class UserController extends AbstractController
     public function changeUserEmail(?User $changingUser, Request $request, Encryptor $encryptor, TokenManuallyGenerator $tokenManuallyGenerator)
     {
         if(is_null($changingUser)) throw new NotFoundHttpException('User not founded!');
-        $form = $this->createForm(ConfirmEmailType::class);
+        $form = $this->createForm(ConfirmType::class);
         if($form->submit($request->request->all())->isValid()) {
             $hash = $form->getData()['hash'];
             $newEmail = $changingUser->getNewEmail();
@@ -353,14 +354,41 @@ class UserController extends AbstractController
     }
 
     /**
-     *
-     * @Route("/api/user/{id<\d+>}/roles", methods={"PUT"})
-     * Security("is_granted('changeRoles', changingUser)")
+     * @OA\Put(
+     *     path="/api/users/{id}/roles",
+     *     tags={"users"},
+     *     security={{"bearer":{}}},
+     *     description="Change user roles",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(@OA\Property(property="roles", type="array", @OA\Items(type="string")))),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success in changing user roles",
+     *         @OA\JsonContent(@OA\Property(property="data", @OA\Property(property="new_roles", type="array", @OA\Items(type="string"))))
+     *     ),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403"),
+     *     @OA\Response(response=404, ref="#/components/responses/Error404")
+     * )
+     * @Route("/api/users/{id<\d+>}/roles", methods={"PUT"})
+     * @Entity(name="changingUser", expr="repository.findActiveUser(id)")
+     * @Security("is_granted('modifyUserRoles', changingUser)")
      */
-    public function changeUserRoles()
+    public function changeUserRoles(User $changingUser, Request $request)
     {
+        if(is_null($changingUser)) throw new NotFoundHttpException('User not founded!');
 
-        return new Response();
+        $form = $this->createForm(UserRolesType::class, $changingUser);
+        if($form->submit($request->request->all())->isValid()) {
+            $this->denyAccessUnlessGranted('setNewUserRoles', $changingUser, "Bad new user role!");
+            $this->getDoctrine()->getRepository(User::class)->save($changingUser);
+
+            return ApiResponse::createSuccessResponse(
+                ['new_roles' => $changingUser->getRoles()]
+            );
+        }
+        throw new BadRequestHttpException('Bad content!');
     }
     /**
      * @OA\Post(
@@ -415,7 +443,7 @@ class UserController extends AbstractController
      *     @OA\Response(response=404, ref="#/components/responses/Error404")
      * )
      * @Route("/api/users/{id<\d+>}/lock", methods={"DELETE"})
-     * @Entity(name="lockableUser", expr="repository.findActiveUser(id)")
+     * @Entity(name="lockableUser", expr="repository.findActiveUser(id, true)")
      */
     public function removeUserLock(?User $lockableUser, EventDispatcherInterface $dispatcher)
     {

@@ -12,6 +12,7 @@ class LinkBuilder
 
     public function __construct(Encryptor $encryptor)
     {
+        //TODO add expiredAt in link
         $this->encryptor = $encryptor;
     }
 
@@ -22,6 +23,15 @@ class LinkBuilder
         if(isset($arguments['email'])) {
             unset($arguments['email']);
         }
+        return $link.http_build_query($arguments)."&hash=".$checkSum;
+    }
+
+    public function getRecoveryLink(string $link, array $arguments)
+    {
+        $checkSum = $this->encryptor->computedCheckSim($arguments);
+        if(isset($arguments['current_password']))
+            unset($arguments['current_password']);
+        $link .= (stristr($link, '?'))? "&": "?";
         return $link.http_build_query($arguments)."&hash=".$checkSum;
     }
 

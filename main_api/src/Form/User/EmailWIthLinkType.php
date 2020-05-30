@@ -14,20 +14,38 @@ use Symfony\Component\Validator\Constraints\Url;
 use OpenApi\Annotations as OA;
 
 /**
+ * @OA\Schema(
+ *     schema="link",
+ *     @OA\Property(property="link", type="link", example="http://client.sapechat.ru/confirmEmail")
+ * )
+ * @OA\Schema(
+ *     schema="NewEmailWithLink",
+ *     allOf={@OA\Schema(ref="#/components/schemas/link")},
+ *     @OA\Property(property="new_email", type="string", example="example@mail.com")
+ * )
+ * @OA\Schema(
+ *     schema="EmailWithLink",
+ *     allOf={@OA\Schema(ref="#/components/schemas/link")},
+ *     @OA\Property(property="email", type="string", example="example@mail.com")
+ * )
  * @OA\RequestBody(
- *     request="NewEmailType",
+ *     request="EmailWIthLinkType",
  *     required=true,
- *     @OA\JsonContent(
- *         @OA\Property(property="link", type="link", example="http://client.sapechat.ru/confirmEmail"),
- *         @OA\Property(property="new_email", type="string", example="example@mail.com")
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/EmailWithLink")
+ * )
+ * @OA\RequestBody(
+ *     request="NewEmailWIthLinkType",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/NewEmailWithLink")
  * )
  */
 
-class NewEmailType extends AbstractType
+class EmailWIthLinkType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $emailPropertyName = ($options['new_email'])? 'new_email': 'email';
+
         $builder
             ->add('link', TextType::class, [
                 'constraints' => [
@@ -37,7 +55,7 @@ class NewEmailType extends AbstractType
                     ]),
                 ]
             ])
-            ->add('new_email', EmailType::class, [
+            ->add($emailPropertyName, EmailType::class, [
                 'required'=>false,
                 'constraints' => [
                     new NotBlank(),
@@ -49,7 +67,10 @@ class NewEmailType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
-            ['csrf_protection' => false]
+            [
+                'csrf_protection' => false,
+                'new_email' => true
+            ]
         );
     }
 }

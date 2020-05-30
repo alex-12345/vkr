@@ -5,7 +5,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Events\UserCreatedEvent;
-use App\Form\User\ConfirmEmailType;
+use App\Form\User\ConfirmType;
 use App\Form\User\UserType;
 use App\Response\ApiResponse;
 use App\Serializer\Normalizer\UserNormalizer;
@@ -51,7 +51,6 @@ class InviteUserController extends AbstractController
     {
         $newUser = new User();
         $form = $this->createForm(UserType::class, $newUser, ['roles' => true]);
-
         if($form->submit($request->request->all())->isValid()){
 
             $this->denyAccessUnlessGranted('modifyInvite', $newUser);
@@ -342,7 +341,7 @@ class InviteUserController extends AbstractController
 
         $isAdmin = $verifiedInvite->getRoles() === User::ROLE_SUPER_ADMIN;
 
-        $form = $this->createForm(ConfirmEmailType::class, null, ['password'=> !$isAdmin]);
+        $form = $this->createForm(ConfirmType::class, null, ['password'=> !$isAdmin]);
 
         if($form->submit($request->request->all())->isValid()) {
 

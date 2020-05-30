@@ -70,7 +70,22 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setMaxResults(1)
             ->getOneOrNullResult();
         ;
+    }
 
+    public function findActiveUserByEmail(string $email, bool $isLocked = false): ? User
+    {
+        return $this->createQueryBuilder('u')
+            ->AndWhere('u.email = :email ')
+            ->andWhere('u.isActive = :isActive')
+            ->andWhere('u.isLocked = :isLocked')
+            ->setParameter('email', $email)
+            ->setParameter('isActive', 1)
+            ->setParameter('isLocked', $isLocked)
+            ->getQuery()
+            ->setFirstResult(0)
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+        ;
     }
     private function filterOutputWithPagination(int $pNumber, int $pSize, bool $isActive, bool $isLocked = false ):Paginator
     {
@@ -132,7 +147,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
     }
 
-    public function findActiveUser(int $id) : ?User
+    public function findActiveUser(int $id, bool $isLooked = false) : ?User
     {
         return $this->createQueryBuilder('u')
             ->AndWhere('u.id = :id ')
@@ -140,12 +155,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->AndWhere('u.isLocked = :isLocked ')
             ->setParameter('id', $id)
             ->setParameter('isActive', true)
-            ->setParameter('isLocked', false)
+            ->setParameter('isLocked', $isLooked)
             ->getQuery()
             ->setFirstResult(0)
             ->setMaxResults(1)
             ->getOneOrNullResult();
         ;
     }
+
 
 }

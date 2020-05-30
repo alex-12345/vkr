@@ -39,11 +39,7 @@ services:
         arguments:
             $appSecret: '%app_secret%'
 
-    App\EventSubscriber\EmailNotificationSubscribers\UserChangesEmailSubscriber:
-        arguments:
-            $sender: '%notification_sender_email%'
-            $workspace_name: '%app_url%'
-    App\EventSubscriber\EmailNotificationSubscribers\UserCreatedSubscriber:
+    App\EventSubscriber\EmailNotificationSubscriber:
         arguments:
             $sender: '%notification_sender_email%'
             $workspace_name: '%app_url%'

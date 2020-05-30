@@ -83,7 +83,10 @@ class UserType extends AbstractType implements DataMapperInterface
         if($options['roles']) {
             $builder->add('roles', ChoiceType::class, [
                     'choices' => [User::ROLE_USER,User::ROLE_ADMIN,User::ROLE_MODERATOR],
-                    'multiple' =>true
+                    'multiple' =>true,
+                    'constraints' => [
+                        new NotBlank()
+                    ]
                 ]
             );
         }
