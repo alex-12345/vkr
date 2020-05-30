@@ -48,6 +48,18 @@ export default {
                 });
             });
         },
+        changeDescription(ctx, description) {
+            return new Promise(function(resolve, reject) {
+                axios.put('http://sapechat.ru/api/users/current/description', {description: description})
+                .then(response => {
+                    ctx.commit('updateDescriptionUser', response.data.data.description)
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
         changeSendingPassword(ctx) {
             ctx.commit('updateSendingPassword')
         },

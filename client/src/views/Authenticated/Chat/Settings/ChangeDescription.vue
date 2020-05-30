@@ -23,6 +23,8 @@
                 </div>
             </md-card-content>
 
+            <md-progress-bar md-mode="indeterminate" v-if="sending" />
+
             <md-card-actions>
                 <md-button type="submit" class="md-primary" :disabled="sending">Сохранить</md-button>
             </md-card-actions>
@@ -32,7 +34,9 @@
 
 <script>
     import { validationMixin } from 'vuelidate'
+    import axios from 'axios'
     import { required } from 'vuelidate/lib/validators'
+    import { mapActions } from 'vuex'
 
     export default {
         name: 'ChangeDescription',
@@ -51,6 +55,12 @@
             }
         },
         methods: {
+            ...mapActions([
+                'changeDescription',
+                'removeToken',
+                'removeRefreshToken',
+                'removeUser'
+            ]),
             getValidationClass (fieldName) {
                 const field = this.$v.form[fieldName]
 
@@ -66,7 +76,19 @@
             },
             saveDescriptiond() {
                 this.sending = true
-                console.log('description: ', this.form.description)
+
+                axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
+                this.changeDescription(this.form.description)
+                .catch(error => {
+                    if (error.response.status == 423) {
+                        this.removeToken()
+                        this.removeRefreshToken()
+                        this.removeUser()
+                        delete axios.defaults.headers.common['Authorization']
+                        this.$router.push('/authorization')
+                    }
+                })
+
                 this.sending = false
                 this.clearForm()
             },
