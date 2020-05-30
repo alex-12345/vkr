@@ -42,7 +42,7 @@
                 if (this.showChats) {
                     this.changeShowChats()
                 }
-                this.$router.push("/chat/settings");
+                this.$router.push("/chat/settings").catch(() => {});
             }
         },
     }

@@ -25,7 +25,7 @@
                 if (this.showChats) {
                     this.changeShowChats()
                 }
-                this.$router.push("/chat/employees");
+                this.$router.push("/chat/employees").catch(() => {});
             },
         },
     }
