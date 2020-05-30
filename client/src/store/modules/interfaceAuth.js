@@ -13,15 +13,8 @@ export default {
                     {id: 2, title: "Поле обязательно для заполнения", error: true},
                 ]
             },
-            {id: 3, title: 'Ip адрес', type: 'text', required: true, error: false, ipAddress: true,
-                warningItemArr: [
-                    {id: 1, title: "Ip адрес должен быть формата 0.0.0.0", error: true},
-                    {id: 2, title: "Поле обязательно для заполнения", error: true},
-                ]
-            },
         ],
         email: '',
-        ipAddress: '',
         password: '',
         submitStatus: null
     },
@@ -37,12 +30,6 @@ export default {
         },
         changePasswordLogin(ctx, password) {
             ctx.commit('updatePasswordLogin', password)
-        },
-        changeValidationIpAddressLogin(ctx, vIpAddress) {
-            ctx.commit('updateValidationIpAddressLogin', vIpAddress)
-        },
-        changeIpAddressLogin(ctx, ipAddress) {
-            ctx.commit('updateIpAddressLogin', ipAddress)
         },
         changeSubmitStatusLogin(ctx, value) {
             ctx.commit('updateSubmitStatusLogin', value)
@@ -69,16 +56,6 @@ export default {
         updatePasswordLogin(state, password) {
             state.password = password
         },
-        updateValidationIpAddressLogin(state, vIpAddress) {
-            state.formItemArr[2].error = vIpAddress.invalid
-            state.formItemArr[2].required = vIpAddress.required
-            state.formItemArr[2].warningItemArr[1].error = vIpAddress.required
-            state.formItemArr[2].ipAddress = vIpAddress.ipAddress
-            state.formItemArr[2].warningItemArr[0].error = vIpAddress.ipAddress
-        },
-        updateIpAddressLogin(state, ipAddress) {
-            state.ipAddress = ipAddress
-        },
         updateSubmitStatusLogin(state, value) {
             state.submitStatus = value
         }
@@ -89,9 +66,6 @@ export default {
         },
         emailLogin(state) {
             return state.email
-        },
-        ipAddressLogin(state) {
-            return state.ipAddress
         },
         passwordLogin(state) {
             return state.password

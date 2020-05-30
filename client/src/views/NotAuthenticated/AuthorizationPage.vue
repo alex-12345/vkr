@@ -21,14 +21,13 @@
     import axios from 'axios'
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
-    import { required, minLength, ipAddress, email } from 'vuelidate/lib/validators'
+    import { required, minLength, email } from 'vuelidate/lib/validators'
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
         computed: mapGetters([
             "formItemArrLogin", 
             "emailLogin", 
-            "ipAddressLogin", 
             "passwordLogin", 
             "submitStatusLogin",
             "isAuthenticated",
@@ -38,10 +37,6 @@
             emailLogin: {
                 required,
                 email
-            },
-            ipAddressLogin: {
-                required,
-                ipAddress
             },
             passwordLogin: {
                 required,
@@ -58,10 +53,8 @@
                 'changeEmailLogin', 
                 'changeValidationPasswordLogin', 
                 'changePasswordLogin', 
-                'changeValidationIpAddressLogin', 
-                'changeIpAddressLogin', 
-                'changeSubmitStatusLogin', 
-                'changeHeaderItems',
+                'changeValidationIpAddressLogin',  
+                'changeSubmitStatusLogin',
                 'authRequest',
                 'addUser',
                 'getCurrentUserInfo'
@@ -76,10 +69,6 @@
                     this.changePasswordLogin(answer.value)
                     this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
                 }
-                else if (answer.title === 'Ip адрес') {
-                    this.changeIpAddressLogin(answer.value)
-                    this.changeValidationIpAddressLogin({invalid: this.$v.ipAddressLogin.$invalid, required: this.$v.ipAddressLogin.required, ipAddress: this.$v.ipAddressLogin.ipAddress})
-                }
             },
             onSubmit: function () {
                 this.$v.$touch()
@@ -91,16 +80,7 @@
                     if (this.$v.passwordLogin.$invalid) {
                         this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
                     }
-                    if (this.$v.ipAddressLogin.$invalid) {
-                        this.changeValidationIpAddressLogin({invalid: this.$v.ipAddressLogin.$invalid, required: this.$v.ipAddressLogin.required, ipAddress: this.$v.ipAddressLogin.ipAddress})
-                    }
                 } else {
-                    console.log('submit!')
-                    /*const user = {
-                        "username": this.emailLogin,
-                        "password": this.passwordLogin
-                    }
-                    console.log(user)*/
                     // do your submit logic here
                     this.changeSubmitStatusLogin('PENDING')
                     
@@ -114,9 +94,6 @@
                 }
             }
         },
-        mounted: function () {
-            this.changeHeaderItems(3)
-        }
     }
 </script>
 
@@ -129,7 +106,7 @@
 
     .authorizationForm{
         margin: 150px auto;
-        height: 405px;
+        height: 330px;
         width: 370px;
         border: 1px solid #dbdbdb;
         background-color: white;
