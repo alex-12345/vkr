@@ -6,29 +6,31 @@
             </md-card-header>
 
             <md-card-content>
-                        <md-field :class="getValidationClass('password')">
-                            <label for="pass">Введите старый пароль</label>
-                            <md-input name="pass" type="password" v-model="form.oldPassword" :disabled="sendingPassword"></md-input>
-                            <span class="md-error" v-if="!$v.form.password.required">Поле обязательно</span>
-                            <span class="md-error" v-else-if="!$v.form.password.minLength">Пароль должен содержать минимум 6 символов</span>
-                        </md-field>
+                <md-field :class="getValidationClass('password')">
+                    <label for="pass">Введите старый пароль</label>
+                    <md-input name="pass" type="password" v-model="form.oldPassword" :disabled="sendingPassword"></md-input>
+                    <span class="md-error" v-if="!$v.form.password.required">Поле обязательно</span>
+                    <span class="md-error" v-else-if="!$v.form.password.minLength">Пароль должен содержать минимум 6 символов</span>
+                </md-field>
                     
-                        <md-field :class="getValidationClass('password')">
-                            <label for="pass">Введите новый пароль</label>
-                            <md-input name="pass" type="password" v-model="form.password" :disabled="sendingPassword"></md-input>
-                            <span class="md-error" v-if="!$v.form.password.required">Поле обязательно</span>
-                            <span class="md-error" v-else-if="!$v.form.password.minLength">Пароль должен содержать минимум 6 символов</span>
-                        </md-field>
+                <md-field :class="getValidationClass('password')">
+                    <label for="pass">Введите новый пароль</label>
+                    <md-input name="pass" type="password" v-model="form.password" :disabled="sendingPassword"></md-input>
+                    <span class="md-error" v-if="!$v.form.password.required">Поле обязательно</span>
+                    <span class="md-error" v-else-if="!$v.form.password.minLength">Пароль должен содержать минимум 6 символов</span>
+                </md-field>
                     
-                        <md-field :class="getValidationClass('repeatPassword')">
-                            <label for="repeatPass">Повторите пароль</label>
-                            <md-input name="repeatPass" type="password" v-model="form.repeatPassword" :disabled="sendingPassword"></md-input>
-                            <span class="md-error" v-if="!$v.form.repeatPassword.required">Поле обязательно</span>
-                            <span class="md-error" v-else-if="!$v.form.repeatPassword.sameAsPassword">Пароль должен быть идентичен</span>
-                        </md-field>
-                <span class="md-error" v-if="passwordChanged && passwordWorked">Пароль изменён</span>
-                <span class="md-error" v-else-if="!passwordChanged && passwordWorked">Не верный пароль</span>
+                <md-field :class="getValidationClass('repeatPassword')">
+                    <label for="repeatPass">Повторите пароль</label>
+                    <md-input name="repeatPass" type="password" v-model="form.repeatPassword" :disabled="sendingPassword"></md-input>
+                    <span class="md-error" v-if="!$v.form.repeatPassword.required">Поле обязательно</span>
+                    <span class="md-error" v-else-if="!$v.form.repeatPassword.sameAsPassword">Пароль должен быть идентичен</span>
+                </md-field>
+
+                <span class="md-error" v-if="error.show">{{error.body}}</span>
             </md-card-content>
+
+            <md-progress-bar md-mode="indeterminate" v-if="sendingPassword" />
 
             <md-card-actions>
                 <md-button type="submit" class="md-primary" :disabled="sendingPassword">Сохранить</md-button>
@@ -57,6 +59,10 @@
                 password: null,
                 repeatPassword: null,
             },
+            error: {
+                show: false,
+                body: '',
+            },
         }),
         validations: {
             form: {
@@ -78,8 +84,8 @@
             ...mapActions([
                 'changePassword',
                 'changeSendingPassword',
-                'changePasswordCorrectness',
-                'changePasswordWorked'
+                'changeSubmitStatusLogin',
+                'authLogout'
             ]),
             getValidationClass (fieldName) {
                 const field = this.$v.form[fieldName]
@@ -98,7 +104,6 @@
             },
             savePassword() {
                 this.changeSendingPassword()
-                this.changePasswordWorked()
                 const object = {
                     "old_password": this.form.oldPassword,
                     "new_password": this.form.password
@@ -106,7 +111,21 @@
                 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
                 this.changePassword(object)
                 .then(() => {
+                    this.error.show = false
                     this.clearForm()
+                })
+                .catch((error) => {
+                    if (error.response.status == 400) {
+                        this.error.show = true
+                        this.error.body = 'Неправильный старый пароль.'
+                    }
+                    else if (error.response.status == 423) {
+                        this.changeSubmitStatusLogin('USER_IS_BLOCKED')
+                        this.authLogout()
+                        .then(() => {
+                            this.$router.push('/authorization')
+                        })
+                    }
                 })
             },
             validatePassword () {

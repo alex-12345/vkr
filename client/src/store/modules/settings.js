@@ -4,14 +4,10 @@ export default {
     state: {
         sendingPassword: false,
         sendingCreateUser: false,
-        passwordChanged: false,
-        worked: false
     },
     getters: {
         sendingPassword: state => state.sendingPassword,
         sendingCreateUser: state => state.sendingCreateUser,
-        passwordChanged: state => state.passwordChanged,
-        passwordWorked: state => state.worked,
     },
     actions: {
         createUser(ctx, admin) {
@@ -33,18 +29,11 @@ export default {
                 axios.put('http://sapechat.ru/api/users/current/password', pass)
                 .then(response => {
                     ctx.commit('updateSendingPassword')
-                    ctx.commit('updatePasswordChanged', true)
                     resolve (response.data)
                 })
                 .catch(error => {
                     ctx.commit('updateSendingPassword')
-                    if (error.response.status == 400) {
-                        ctx.commit('updatePasswordChanged', false)
-                    }
-                    else if (error.response.status == 403) {
-                        ctx.commit('updatePasswordChanged', false)
-                    }
-                    reject (error.data)
+                    reject (error)
                 });
             });
         },
@@ -91,12 +80,6 @@ export default {
         changeSendingCreateUser(ctx) {
             ctx.commit('updateSendingCreateUser')
         },
-        changePasswordChanged(ctx, value) {
-            ctx.commit('updatePasswordChanged', value)
-        },
-        changePasswordWorked(ctx) {
-            ctx.commit('updatePasswordWorked')
-        },
     },
     mutations: {
         updateSendingPassword(state) {
@@ -105,11 +88,5 @@ export default {
         updateSendingCreateUser(state) {
             state.sendingCreateUser = !state.sendingCreateUser
         },
-        updatePasswordChanged(state, value) {
-            state.passwordChanged = value
-        },
-        updatePasswordWorked(state) {
-            state.worked = true
-        }
     }
 }
