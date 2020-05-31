@@ -13,8 +13,8 @@ export default {
         isActiveUser: localStorage.getItem("is_active") || null,
         registrationDateUser: localStorage.getItem("registration_date") || null,
         initials: {
-            first: '',
-            second: '',
+            first: localStorage.getItem("initial_first") || null,
+            second: localStorage.getItem("initial_second") || null,
         }
     },
     getters: {
@@ -96,11 +96,13 @@ export default {
         updateNameUser(state, firstName) {
             localStorage.first_name = firstName
             state.nameUser = firstName
+            localStorage.initial_first = firstName[0]
             state.initials.first = state.nameUser[0]
         },
         updateSecondNameUser(state, lastName) {
             localStorage.second_name = lastName
             state.secondNameUser = lastName
+            localStorage.initial_second = lastName[0]
             state.initials.second = state.secondNameUser[0]
         },
         updateEmailUser(state, email) {
@@ -136,8 +138,12 @@ export default {
             state.idUser = ''
             localStorage.removeItem('first_name')
             state.nameUser = ''
+            localStorage.removeItem('initial_first')
+            state.initials.first = ''
             localStorage.removeItem('second_name')
             state.secondNameUser = ''
+            localStorage.removeItem('initial_second')
+            state.initials.second = ''
             localStorage.removeItem('email_user')
             state.emailUser = ''
             localStorage.removeItem('main_photo')

@@ -1,8 +1,11 @@
 <template>
     <div class="userArea">
         <div class="avatar">
-            <md-avatar class="md-avatar-icon">
+            <md-avatar v-if="avatarUser == 'null' || avatarUser == undefined " class="md-avatar-icon">
                 <md-ripple>{{initials.second}} {{initials.first}}</md-ripple>
+            </md-avatar>
+            <md-avatar v-else-if="avatarUser != 'null'">
+                <img :src="avatarUser" alt="Avatar">
             </md-avatar>
         </div>
         <div class="settings">
@@ -37,13 +40,14 @@
             ...mapActions([
                 'changeShowChats',
                 'getCurrentUserInfo',
+                'changeInitials'
             ]),
             settings() {
                 if (this.showChats) {
                     this.changeShowChats()
                 }
                 this.$router.push("/chat/settings").catch(() => {});
-            }
+            },
         },
     }
 </script>
@@ -80,10 +84,17 @@
         padding-top: 24px;
     }
 
+    .fullName {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .tag {
         color: #7f7982;
         font-family: 'Nunito', sans-serif;
         font-size: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .settings {
