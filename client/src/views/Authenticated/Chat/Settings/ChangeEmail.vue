@@ -16,7 +16,10 @@
                         </md-field>
                     </div>
                 </div>
+                <span class="md-error" v-if="error.show">{{error.body}}</span>
             </md-card-content>
+
+            <md-progress-bar md-mode="indeterminate" v-if="sending" />
 
             <md-card-actions>
                 <md-button type="submit" class="md-primary" :disabled="sending">Сохранить</md-button>
@@ -28,6 +31,8 @@
 <script>
     import { validationMixin } from 'vuelidate'
     import { required, email } from 'vuelidate/lib/validators'
+    import { mapActions } from 'vuex'
+    import axios from 'axios'
 
     export default {
         name: 'ChangeEmail',
@@ -37,6 +42,10 @@
                 email: null,
             },
             sending: false,
+            error: {
+                show: false,
+                body: '',
+            },
         }),
         validations: {
             form: {
@@ -47,6 +56,11 @@
             }
         },
         methods: {
+            ...mapActions([
+                'changeEmail',
+                'changeSubmitStatusLogin',
+                'authLogout'
+            ]),
             getValidationClass (fieldName) {
                 const field = this.$v.form[fieldName]
 
@@ -62,7 +76,36 @@
             },
             saveEmail() {
                 this.sending = true
-                console.log('Email: ', this.form.email)
+                
+                const email = {
+                    new_email: this.form.email,
+                    link: "http://client.sapechat.ru/confirmEmail",
+                }
+
+                axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
+                this.changeEmail(email)
+                .then(() => {
+                    this.error.show = false
+                    this.clearForm()
+                })
+                .catch((error) => {
+                    if (error.response.data.errors.title == 'This user already have this email!') {
+                        this.error.show = true
+                        this.error.body = 'Этот пользователь уже имеет этот email.'
+                    }
+                    else if (error.response.data.errors.title == 'User with this email already exist and confirmed') {
+                        this.error.show = true
+                        this.error.body = 'Пользователь с таким адресом электронной почты уже существует.'
+                    }
+                    else if (error.response.status == 423) {
+                        this.changeSubmitStatusLogin('USER_IS_BLOCKED')
+                        this.authLogout()
+                        .then(() => {
+                            this.$router.push('/authorization')
+                        })
+                    }
+                });
+
                 this.sending = false
                 this.clearForm()
             },

@@ -75,6 +75,7 @@
                 'getInvitesStatus',
                 'confirmInviteAdmin',
                 'confirmInviteUser',
+                'getCurrentUserInfo'
             ]),
             getValidationClass (fieldName) {
                 const field = this.$v.form[fieldName]
@@ -95,6 +96,7 @@
 
                 this.confirmInviteUser({id: this.params.id, hash: this.params.hash, password: this.form.password})
                 .then(() => {
+                    this.getCurrentUserInfo()
                     this.$router.push("/chat");
                 })
 

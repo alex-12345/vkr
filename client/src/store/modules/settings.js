@@ -60,6 +60,31 @@ export default {
                 });
             });
         },
+        changeEmail(ctx, email) {
+            return new Promise(function(resolve, reject) {
+                axios.post('http://sapechat.ru/api/users/current/email', email)
+                .then(response => {
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
+        confirmChangeEmail(ctx, object) {
+            return new Promise(function(resolve, reject) {
+                axios.put('http://sapechat.ru/api/users/'+ object.id +'/email', {hash: object.hash})
+                .then(response => {
+                    ctx.commit('updateToken', response.data.token)
+                    ctx.commit('updateRefreshToken', response.data.refresh_token)
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
         changeSendingPassword(ctx) {
             ctx.commit('updateSendingPassword')
         },

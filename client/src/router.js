@@ -47,7 +47,11 @@ export default new Router({
                 {
                     path: 'confirm',
                     component: () => import('./views/NotAuthenticated/Confirm')
-                }, 
+                },
+                {
+                    path: 'confirmEmail',
+                    component: () => import('./views/NotAuthenticated/ConfirmEmail')
+                },  
             ]
         },
         {
@@ -68,6 +72,6 @@ export default new Router({
                     component: () => import('./views/Authenticated/Chat/Message/Chat'),
                 },
             ]
-        }    
+        },   
     ]
 })
