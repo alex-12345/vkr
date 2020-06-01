@@ -13,7 +13,7 @@ export default {
         createUser(ctx, admin) {
             console.log('admin: ', admin)
             return new Promise(function(resolve, reject) {
-                axios.post('http://sapechat.ru/api/invites', admin)
+                axios.post('http://' + localStorage.domainName + '/api/invites', admin)
                 .then(response => {
                     ctx.commit('updateSendingCreateUser')
                     resolve (response.data)
@@ -26,7 +26,7 @@ export default {
         },
         changePassword(ctx, pass) {
             return new Promise(function(resolve, reject) {
-                axios.put('http://sapechat.ru/api/users/current/password', pass)
+                axios.put('http://' + localStorage.domainName + '/api/users/current/password', pass)
                 .then(response => {
                     ctx.commit('updateSendingPassword')
                     resolve (response.data)
@@ -39,7 +39,7 @@ export default {
         },
         changeDescription(ctx, description) {
             return new Promise(function(resolve, reject) {
-                axios.put('http://sapechat.ru/api/users/current/description', {description: description})
+                axios.put('http://' + localStorage.domainName + '/api/users/current/description', {description: description})
                 .then(response => {
                     ctx.commit('updateDescriptionUser', response.data.data.description)
                     resolve (response.data)
@@ -51,7 +51,7 @@ export default {
         },
         changeEmail(ctx, email) {
             return new Promise(function(resolve, reject) {
-                axios.post('http://sapechat.ru/api/users/current/email', email)
+                axios.post('http://' + localStorage.domainName + '/api/users/current/email', email)
                 .then(response => {
                     resolve (response.data)
                 })
@@ -62,7 +62,7 @@ export default {
         },
         confirmChangeEmail(ctx, object) {
             return new Promise(function(resolve, reject) {
-                axios.put('http://sapechat.ru/api/users/'+ object.id +'/email', {hash: object.hash})
+                axios.put('http://' + localStorage.domainName + '/api/users/'+ object.id +'/email', {hash: object.hash})
                 .then(response => {
                     ctx.commit('updateToken', response.data.token)
                     ctx.commit('updateRefreshToken', response.data.refresh_token)
@@ -77,7 +77,7 @@ export default {
         changeRoles(ctx, object) {
             console.log('roles: ', object.roles)
             return new Promise(function(resolve, reject) {
-                axios.put('http://sapechat.ru/api/users/'+ object.id +'/roles', {roles: object.roles})
+                axios.put('http://' + localStorage.domainName + '/api/users/'+ object.id +'/roles', {roles: object.roles})
                 .then(response => {
                     ctx.commit('updateRolesUser', response.data.data.new_roles)
                     resolve (response.data)

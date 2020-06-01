@@ -34,7 +34,7 @@ export default {
     actions: {
         getCurrentUserInfo(ctx) {
             return new Promise(function(resolve, reject) {
-                axios.get('http://sapechat.ru/api/users/current')
+                axios.get('http://' + localStorage.domainName + '/api/users/current')
                 .then(response => {
                     ctx.commit('updateIdUser', response.data.data.id)
                     ctx.commit('updateNameUser', response.data.data.first_name)

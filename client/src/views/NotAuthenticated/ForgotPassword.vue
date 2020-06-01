@@ -16,6 +16,14 @@
                                 <span class="md-error" v-else-if="!$v.form.email.email">Email некорректен</span>
                             </md-field>
                         </div>
+                        <div class="md-layout-item md-small-size-100">
+                            <md-field :class="getValidationClass('domainName')">
+                                <label for="domain-name">Введите домен</label>
+                                <md-input name="domain-name" v-model="form.domainName" :disabled="sending"></md-input>
+                                <span class="md-error" v-if="!$v.form.domainName.required">Поле обязательно</span>
+                                <span class="md-error" v-else-if="!$v.form.domainName.url">Некорректное доменное имя</span>
+                            </md-field>
+                        </div>
                     </div>
                     <span class="md-error" v-if="error.show">{{error.body}}</span>
                 </md-card-content>
@@ -32,8 +40,9 @@
 
 <script>
     import { validationMixin } from 'vuelidate'
-    import { required, email } from 'vuelidate/lib/validators'
+    import { required, email, helpers } from 'vuelidate/lib/validators'
     import { mapActions } from 'vuex'
+    const url = helpers.regex('url', /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/)
 
     export default {
         name: 'ForgotPassword',
@@ -41,6 +50,7 @@
         data: () => ({
             form: {
                 email: null,
+                domainName: localStorage.domainName || null,
             },
             error: {
                 show: false,
@@ -54,6 +64,10 @@
                     required,
                     email
                 },
+                domainName: {
+                    required,
+                    url
+                }
             },
         },
         methods: {
@@ -72,13 +86,15 @@
             clearForm () {
                 this.$v.$reset()
                 this.form.email = null
+                this.form.domainName = null
             },
             saveEmail() {
                 this.sending = true
                 
                 const email = {
                     email: this.form.email,
-                    link: "http://client.sapechat.ru/confirmPassword",
+                    link: 'http://client.' + this.form.domainName + '/confirmPassword',
+                    domainName: this.form.domainName
                 }
 
                 this.createRequestPasswordChange(email)

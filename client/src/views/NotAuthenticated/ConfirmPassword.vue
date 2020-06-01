@@ -63,6 +63,7 @@
                 show: false,
                 body: '',
             },
+            domainName: null,
             sending: false,
             expectation: false,
             params: '',
@@ -135,7 +136,9 @@
                     },
                     {}
                 );
-            console.log('params: ', this.params)
+            this.domainName = window.location.hostname
+            this.domainName = this.domainName.substr(7, this.domainName.length)
+            localStorage.domainName = this.domainName
             this.checkRecovey(this.params)
                 .then(() => {
                     this.expectation = true

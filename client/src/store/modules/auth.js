@@ -2,25 +2,19 @@ import axios from 'axios'
 
 export default {
     state: {
-        user: {
-            "username": '',
-            "password": ''
-        },
         status: "",
     },
     getters: {
-        getUser: state => state.user,
         authStatus: state => state.status
     },
     actions: {
-        addUser(ctx, userData) {
-            ctx.commit('updateUser', userData)
-        },
-        authRequest(ctx, user) {
+        authRequest(ctx, object) {
             return new Promise(function(resolve, reject) {
                 ctx.commit('updateAuthRequest')
-                axios.post('http://sapechat.ru/api/auth/login_check', user)
+                axios.post('http://' + object.domainName + '/api/auth/login_check', {username: object.username, password: object.password })
                 .then(response => {
+                    localStorage.domainName = object.domainName
+
                     //Вызов мутаций из tokenStorage.js
                     ctx.commit('updateToken', response.data.token)
                     ctx.commit('updateRefreshToken', response.data.refresh_token)
@@ -36,23 +30,14 @@ export default {
                     ctx.commit('deleteRefreshToken')
 
                     ctx.commit('updateAuthSuccess')
-                    if (error.response.status == 401) {
-                        ctx.commit('updateSubmitStatusLogin', 'AUTH_ERROR')
-                    }
-                    else if (error.response.status == 403) {
-                        ctx.commit('updateSubmitStatusLogin', 'EMAIL_NOT_CONFIRM')
-                    }
-                    else if (error.response.status == 423) {
-                        ctx.commit('updateSubmitStatusLogin', 'USER_IS_BLOCKED')
-                    }
-                    reject (error.data)
+                    reject (error)
                 });
             });
         },
-        createRequestPasswordChange(ctx, email) {
-            console.log('email: ', email)
+        createRequestPasswordChange(ctx, object) {
+            console.log('email: ', object)
             return new Promise(function(resolve, reject) {
-                axios.post('http://sapechat.ru/api/recovery', email)
+                axios.post('http://' + object.domainName + '/api/recovery', {email: object.email, link: object.link})
                 .then(response => {
                     localStorage.idRequestPasswordChange = response.data.data.id
                     resolve (response.data)
@@ -64,7 +49,7 @@ export default {
         },
         checkRecovey(ctx, object) {
             return new Promise(function(resolve, reject) {
-                axios.get('http://sapechat.ru/api/recovery/'+ object.id +'/status?hash=' + object.hash)
+                axios.get('http://' + localStorage.domainName + '/api/recovery/'+ object.id +'/status?hash=' + object.hash)
                 .then(response => {
                     resolve (response.data)
                 })
@@ -75,7 +60,7 @@ export default {
         },
         confirmPasswordChange(ctx, object) {
             return new Promise(function(resolve, reject) {
-                axios.put('http://sapechat.ru/api/recovery/'+ object.id +'/status', {hash: object.hash, password: object.password})
+                axios.put('http://' + localStorage.domainName + '/api/recovery/'+ object.id +'/status', {hash: object.hash, password: object.password})
                 .then(response => {
                     ctx.commit('updateToken', response.data.token)
                     ctx.commit('updateRefreshToken', response.data.refresh_token)
@@ -98,10 +83,6 @@ export default {
         }
     },
     mutations: {
-        updateUser(state, userData) {
-            state.user.username = userData.name
-            state.user.password = userData.pass
-        },
         updateAuthRequest(state) {
             state.status = 'loading'
         },

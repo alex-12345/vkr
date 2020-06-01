@@ -14,7 +14,7 @@ export default {
         getNewToken(ctx, refreshToken) {
             return new Promise(function(resolve, reject) { 
                 axios
-                    .post('http://sapechat.ru/api/auth/token/refresh', {"refresh_token": refreshToken})
+                    .post('http://' + localStorage.domainName + '/api/auth/token/refresh', {"refresh_token": refreshToken})
                     .then(response => {
 
                         ctx.commit('updateToken', response.data.token)

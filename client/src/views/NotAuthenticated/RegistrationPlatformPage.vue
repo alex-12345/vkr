@@ -2,7 +2,7 @@
     <div class="registrationPage">
         <div class="registrationForm">
             <h1>Sapechat</h1>
-            <h2>Зарегистрируйте вашу площадку</h2>
+            <h2>Настройте площадку</h2>
             <form class="r-form" @submit.prevent="onSubmit">
                 <FormItem 
                     v-for="formItem of formItemArrRegisterPage" :key="formItem.id"
@@ -21,12 +21,14 @@
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
     import { mapGetters, mapActions } from 'vuex'
-    import { required, minLength } from 'vuelidate/lib/validators'
+    import { required, minLength, helpers } from 'vuelidate/lib/validators'
+    const url = helpers.regex('url', /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/)
 
     export default {
         computed: mapGetters([ 
             "formItemArrRegisterPage",  
-            "accessKeyRegisterPage", 
+            "accessKeyRegisterPage",
+            "domainNameRegisterPage", 
             "submitStatusRegisterPage"
         ]),
         validations: {
@@ -34,6 +36,10 @@
                 required,
                 minLength: minLength(4)
             },
+            domainNameRegisterPage: {
+                required,
+                url
+            }
         },
         components: {
             FormItem,
@@ -43,6 +49,8 @@
             ...mapActions([ 
                 'changeValidationAccessKeyRegisterPage', 
                 'changeAccessKeyRegisterPage',
+                'changeDomainNameRegisterPage', 
+                'changeValidationDomainNameRegisterPage',
                 'changeSubmitStatusRegisterPage',
                 'workspaceInfo'
             ]),
@@ -50,6 +58,10 @@
                 if (answer.title === 'Ключ доступа') {
                     this.changeAccessKeyRegisterPage(answer.value)
                     this.changeValidationAccessKeyRegisterPage({invalid: this.$v.accessKeyRegisterPage.$invalid, required: this.$v.accessKeyRegisterPage.required, minLength: this.$v.accessKeyRegisterPage.minLength})
+                }
+                else if (answer.title === 'Доменное имя') {
+                    this.changeDomainNameRegisterPage(answer.value)
+                    this.changeValidationDomainNameRegisterPage({invalid: this.$v.domainNameRegisterPage.$invalid, required: this.$v.domainNameRegisterPage.required, url: this.$v.domainNameRegisterPage.url})
                 }
             },
             onSubmit: function () {
@@ -59,13 +71,16 @@
                     if (this.$v.accessKeyRegisterPage.$invalid) {
                         this.changeValidationAccessKeyRegisterPage({invalid: this.$v.accessKeyRegisterPage.$invalid, required: this.$v.accessKeyRegisterPage.required, minLength: this.$v.accessKeyRegisterPage.minLength})
                     }
+                    if (this.$v.domainNameRegisterPage.$invalid) {
+                        this.changeValidationDomainNameRegisterPage({invalid: this.$v.domainNameRegisterPage.$invalid, required: this.$v.domainNameRegisterPage.required, url: this.$v.domainNameRegisterPage.url})
+                    }
                 } else {
                     console.log('submit!')
                     
                     // do your submit logic here
                     this.changeSubmitStatusRegisterPage('PENDING')
                     
-                    this.workspaceInfo(this.accessKeyRegisterPage).then(() => {
+                    this.workspaceInfo({key: this.accessKeyRegisterPage, domainName: this.domainNameRegisterPage}).then(() => {
                         this.$router.push("/registrationUser");
                     })
                 }
@@ -83,7 +98,7 @@
 
     .registrationForm{
         margin: 150px auto;
-        height: 260px;
+        height: 360px;
         width: 370px;
         border: 1px solid #dbdbdb;
         background-color: white;

@@ -20,6 +20,7 @@
     export default {
         data: () => ({
             params: '',
+            domainName: null,
             error: false
         }),
         methods: {
@@ -43,7 +44,9 @@
                     },
                     {}
                 );
-            console.log('params: ', this.params)
+            this.domainName = window.location.hostname
+            this.domainName = this.domainName.substr(7, this.domainName.length)
+            localStorage.domainName = this.domainName
             this.confirmChangeEmail(this.params)
                 .then(() => {
                     this.getCurrentUserInfo()

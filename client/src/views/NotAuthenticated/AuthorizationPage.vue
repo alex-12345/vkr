@@ -1,148 +1,157 @@
 <template>
-    <div class="authorizationPage">
-        <div class="authorizationForm">
-            <h1>Sapechat</h1>
-            <h2>Авторизуйтесь</h2>
-            <form class="a-form" @submit.prevent="onSubmit">
-                <FormItem 
-                    v-for="formItem of formItemArrLogin" :key="formItem.id"
-                    v-bind:formItem="formItem"
-                    v-on:input="processValue"
-                />
-                <ButtonItem
-                    v-bind:submitStatus="submitStatusLogin"
-                />
-            </form>
-            <button class="forgotPassword">
-                <router-link 
-                    to="forgotPassword"
-                >
-                    Забыли пароль?
-                </router-link>
-            </button>
-        </div>
+    <div>
+        <md-dialog :md-active.sync="error.status">
+            <md-dialog-title>{{error.title}}</md-dialog-title>
+
+            <md-dialog-content>
+                <p>{{error.body}}</p>
+            </md-dialog-content>
+
+            <md-dialog-actions>
+                <md-button class="md-primary" @click="error.status = false">Ок</md-button>
+            </md-dialog-actions>
+        </md-dialog>
+        <form novalidate class="md-layout" @submit.prevent="validateUser">
+            <md-card class="md-layout-item md-size-30 md-small-size-100">
+                <md-card-header>
+                    <div class="md-title">Авторизуйтесь</div>
+                </md-card-header>
+
+                <md-card-content>
+                    <md-field :class="getValidationClass('email')">
+                        <label for="email">Email</label>
+                        <md-input type="email" name="email" id="email" autocomplete="email" v-model="form.email" :disabled="sending" />
+                        <span class="md-error" v-if="!$v.form.email.required">Обязательное поле</span>
+                        <span class="md-error" v-else-if="!$v.form.email.email">Некоректный email</span>
+                    </md-field>
+
+                    
+                    <md-field :class="getValidationClass('password')">
+                        <label for="password">Пароль</label>
+                        <md-input name="password" id="passworde" type="password" v-model="form.password" :disabled="sending" />
+                        <span class="md-error" v-if="!$v.form.password.required">Обязательное поле</span>
+                        <span class="md-error" v-else-if="!$v.form.password.minlength">Invalid password</span>
+                    </md-field>
+                        
+                    <md-field :class="getValidationClass('domainName')">
+                        <label for="domain-name">Доменное имя</label>
+                        <md-input name="domain-name" id="domain-name" v-model="form.domainName" :disabled="sending" />
+                        <span class="md-error" v-if="!$v.form.domainName.required">Обязательное поле</span>
+                        <span class="md-error" v-else-if="!$v.form.domainName.url">Некоректное доменное имя</span>
+                    </md-field>
+                </md-card-content>
+
+                <md-progress-bar md-mode="indeterminate" v-if="sending" />
+
+                <md-card-actions>
+                    <md-button class="md-primary" to="forgotPassword" :disabled="sending">Забыли пароль?</md-button>
+                    <md-button type="submit" class="md-primary" :disabled="sending">Авторизоваться</md-button>
+                </md-card-actions>
+            </md-card>
+        </form>
     </div>
 </template>
 
 <script>
     import axios from 'axios'
-    import FormItem from '@/components/inputForm/FormItem'
-    import ButtonItem from '@/components/inputForm/Button'
-    import { required, minLength, email } from 'vuelidate/lib/validators'
-    import {mapGetters, mapActions} from 'vuex'
+    import { required, minLength, email, helpers } from 'vuelidate/lib/validators'
+    import { mapActions } from 'vuex'
+    const url = helpers.regex('url', /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/)
 
     export default {
-        computed: mapGetters([
-            "formItemArrLogin", 
-            "emailLogin", 
-            "passwordLogin", 
-            "submitStatusLogin",
-            "isAuthenticated",
-            "getUser"
-        ]),
-        validations: {
-            emailLogin: {
-                required,
-                email
+        data: () => ({
+            form: {
+                email: null,
+                password: null,
+                domainName: localStorage.domainName || null,
             },
-            passwordLogin: {
-                required,
-                minLength: minLength(6)
+            error: {
+                title: null,
+                body: null,
+                status: false,
+            },
+            sending: false,
+        }), 
+        validations: {
+            form: {
+                email: {
+                    required,
+                    email
+                },
+                password: {
+                    required,
+                    minLength: minLength(6)
+                },
+                domainName: {
+                    required,
+                    url
+                }
             }
-        },
-        components: {
-            FormItem,
-            ButtonItem
         },
         methods: {
             ...mapActions([
-                'changeValidationEmailLogin', 
-                'changeEmailLogin', 
-                'changeValidationPasswordLogin', 
-                'changePasswordLogin', 
-                'changeValidationIpAddressLogin',  
-                'changeSubmitStatusLogin',
                 'authRequest',
-                'addUser',
                 'getCurrentUserInfo'
             ]),
-            processValue: function (answer) {
-                if (answer.title === 'Имя')
-                {
-                    this.changeEmailLogin(answer.value)
-                    this.changeValidationEmailLogin({invalid: this.$v.emailLogin.$invalid, required: this.$v.emailLogin.required, email: this.$v.emailLogin.email})
-                }
-                else if (answer.title === 'Пароль') {
-                    this.changePasswordLogin(answer.value)
-                    this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
+            getValidationClass (fieldName) {
+                const field = this.$v.form[fieldName]
+
+                if (field) {
+                    return {
+                        'md-invalid': field.$invalid && field.$dirty
+                    }
                 }
             },
-            onSubmit: function () {
+            clearForm () {
+                this.$v.$reset()
+                this.form.email = null
+                this.form.password = null
+                this.form.domainName = null
+            },
+            saveUser () {
+                this.sending = true
+
+                this.authRequest({username: this.email, password: this.password, domainName: this.domainName })
+                .then(() => {
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
+                    this.getCurrentUserInfo()
+                    this.$router.push("/chat");
+                })
+                .catch(error => {
+                    console.log('error: ', error)
+                    if (error.response.status == 401) {
+                        this.error.title = 'Ошибка'
+                        this.error.body = 'Не верный email или пароль.'
+                        this.error.status = true
+                    }
+                    else if (error.response.status == 403) {
+                        this.error.title = 'Ошибка'
+                        this.error.body = 'Email не подтверждён.'
+                        this.error.status = true
+                    }
+                    else if (error.response.status == 423) {
+                        this.error.title = 'Ошибка'
+                        this.error.body = 'Пользователь заблокирован.'
+                        this.error.status = true
+                    }
+                });            
+
+                this.sending = false
+                this.clearForm()
+            },
+            validateUser () {
                 this.$v.$touch()
-                if (this.$v.$invalid) {
-                    this.changeSubmitStatusLogin('ERROR')
-                    if (this.$v.emailLogin.$invalid) {
-                        this.changeValidationEmailLogin({invalid: this.$v.emailLogin.$invalid, required: this.$v.emailLogin.required, email: this.$v.emailLogin.email})
-                    }
-                    if (this.$v.passwordLogin.$invalid) {
-                        this.changeValidationPasswordLogin({invalid: this.$v.passwordLogin.$invalid, required: this.$v.passwordLogin.required, minLength: this.$v.passwordLogin.minLength})
-                    }
-                } else {
-                    // do your submit logic here
-                    this.changeSubmitStatusLogin('PENDING')
-                    
-                    this.addUser({name: this.emailLogin, pass: this.passwordLogin})
-                    this.authRequest(this.getUser).then(() => {
-                        this.changeSubmitStatusLogin('')
-                        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
-                        this.getCurrentUserInfo()
-                        this.$router.push("/chat");
-                    })
+
+                if (!this.$v.$invalid) {
+                    this.saveUser()
                 }
-            }
+            },
         },
     }
 </script>
 
 <style scoped>
-    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600&family=Roboto&display=swap');
-
-    *{ 
-        margin: 0; 
-        padding: 0; 
-        box-sizing: border-box; 
+    .md-card{
+        margin: 80px auto;
     }
-
-    .authorizationForm{
-        margin: 150px auto;
-        height: 330px;
-        width: 370px;
-        border: 1px solid #dbdbdb;
-        background-color: white;
-        text-align: center;
-    }
-
-    h1{
-        margin: 15px 0px;
-    }
-
-    .a-form{
-        margin: 10px auto;
-        padding: 0px 40px;
-    }
-
-    .forgotPassword {
-        float: right;
-        margin-right: 40px;
-        font-family: 'Roboto', sans-serif;
-        background-color: inherit;
-        cursor: pointer;
-        border: none;
-        outline: none;
-    }
-
-    .forgotPassword a {
-        text-decoration: none;
-    }
-    
 </style>

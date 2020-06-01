@@ -79,7 +79,7 @@
                 
                 const email = {
                     new_email: this.form.email,
-                    link: "http://client.sapechat.ru/confirmEmail",
+                    link: 'http://client.' + localStorage.domainName + '/confirmEmail',
                 }
 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
