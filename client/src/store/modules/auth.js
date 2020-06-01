@@ -10,7 +10,6 @@ export default {
     actions: {
         authRequest(ctx, object) {
             return new Promise(function(resolve, reject) {
-                ctx.commit('updateAuthRequest')
                 axios.post('http://' + object.domainName + '/api/auth/login_check', {username: object.username, password: object.password })
                 .then(response => {
                     localStorage.domainName = object.domainName

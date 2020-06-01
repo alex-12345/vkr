@@ -111,7 +111,7 @@
             saveUser () {
                 this.sending = true
 
-                this.authRequest({username: this.email, password: this.password, domainName: this.domainName })
+                this.authRequest({username: this.form.email, password: this.form.password, domainName: this.form.domainName })
                 .then(() => {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.userToken}`
                     this.getCurrentUserInfo()
