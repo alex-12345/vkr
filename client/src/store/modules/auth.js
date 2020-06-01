@@ -49,6 +49,44 @@ export default {
                 });
             });
         },
+        createRequestPasswordChange(ctx, email) {
+            console.log('email: ', email)
+            return new Promise(function(resolve, reject) {
+                axios.post('http://sapechat.ru/api/recovery', email)
+                .then(response => {
+                    localStorage.idRequestPasswordChange = response.data.data.id
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error.data)
+                });
+            })
+        },
+        checkRecovey(ctx, object) {
+            return new Promise(function(resolve, reject) {
+                axios.get('http://sapechat.ru/api/recovery/'+ object.id +'/status?hash=' + object.hash)
+                .then(response => {
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
+        confirmPasswordChange(ctx, object) {
+            return new Promise(function(resolve, reject) {
+                axios.put('http://sapechat.ru/api/recovery/'+ object.id +'/status', {hash: object.hash, password: object.password})
+                .then(response => {
+                    ctx.commit('updateToken', response.data.token)
+                    ctx.commit('updateRefreshToken', response.data.refresh_token)
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
         authLogout(ctx) {
             return new Promise(function(resolve) {
                 ctx.commit('deleteToken')

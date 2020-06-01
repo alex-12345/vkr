@@ -74,6 +74,19 @@ export default {
                 });
             });
         },
+        changeRoles(ctx, object) {
+            console.log('roles: ', object.roles)
+            return new Promise(function(resolve, reject) {
+                axios.put('http://sapechat.ru/api/users/'+ object.id +'/roles', {roles: object.roles})
+                .then(response => {
+                    ctx.commit('updateRolesUser', response.data.data.new_roles)
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
         changeSendingPassword(ctx) {
             ctx.commit('updateSendingPassword')
         },

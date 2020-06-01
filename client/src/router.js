@@ -52,6 +52,14 @@ export default new Router({
                     path: 'confirmEmail',
                     component: () => import('./views/NotAuthenticated/ConfirmEmail')
                 },  
+                {
+                    path: 'forgotPassword',
+                    component: () => import('./views/NotAuthenticated/ForgotPassword')
+                },  
+                {
+                    path: 'confirmPassword',
+                    component: () => import('./views/NotAuthenticated/ConfirmPassword')
+                },
             ]
         },
         {

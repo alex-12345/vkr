@@ -13,6 +13,13 @@
                     v-bind:submitStatus="submitStatusLogin"
                 />
             </form>
+            <button class="forgotPassword">
+                <router-link 
+                    to="forgotPassword"
+                >
+                    Забыли пароль?
+                </router-link>
+            </button>
         </div>
     </div>
 </template>
@@ -98,6 +105,8 @@
 </script>
 
 <style scoped>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600&family=Roboto&display=swap');
+
     *{ 
         margin: 0; 
         padding: 0; 
@@ -120,6 +129,20 @@
     .a-form{
         margin: 10px auto;
         padding: 0px 40px;
+    }
+
+    .forgotPassword {
+        float: right;
+        margin-right: 40px;
+        font-family: 'Roboto', sans-serif;
+        background-color: inherit;
+        cursor: pointer;
+        border: none;
+        outline: none;
+    }
+
+    .forgotPassword a {
+        text-decoration: none;
     }
     
 </style>

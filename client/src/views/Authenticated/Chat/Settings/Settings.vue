@@ -38,7 +38,7 @@
             ChangePassword,
             ChangeDescription,
             ChangeEmail,
-            SendInvitation
+            SendInvitation,
         }
     }
 </script>
