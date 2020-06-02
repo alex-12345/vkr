@@ -34,6 +34,10 @@ use OpenApi\Annotations as OA;
  *     name="recovery",
  *     description="Operations about recovery"
  * )
+ * @OA\Tag(
+ *     name="projects",
+ *     description="Operations about projects"
+ * )
  * @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -41,7 +45,7 @@ use OpenApi\Annotations as OA;
  *     required=true,
  *     @OA\Schema(type="integer")
  * )
- * @OA\SecurityScheme(bearerFormat="JWT", type="http", scheme="bearer", securityScheme="bearer", in="header")
+ * @OA\SecurityScheme(bearerFormat="JWT", type="http", scheme="bearer", securityScheme="bearer")
  *
  * @OA\Response(
  *     response="Error401JWT",

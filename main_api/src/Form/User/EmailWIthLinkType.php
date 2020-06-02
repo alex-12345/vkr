@@ -16,7 +16,7 @@ use OpenApi\Annotations as OA;
 /**
  * @OA\Schema(
  *     schema="link",
- *     @OA\Property(property="link", type="link", example="http://client.sapechat.ru/confirmEmail")
+ *     @OA\Property(property="link", type="string", example="http://client.sapechat.ru/confirmEmail")
  * )
  * @OA\Schema(
  *     schema="NewEmailWithLink",

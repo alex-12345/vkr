@@ -8,11 +8,21 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use OpenApi\Annotations as OA;
 
 /**
+ * TODO refactor userItem property email
+ * @OA\Schema(
+ *     schema="UserNameSurname",
+ *     @OA\Property(property="first_name", type="string"),
+ *     @OA\Property(property="second_name", type="string")
+ * )
  * @OA\Schema(
  *     schema="UserBrief",
- *     @OA\Property(property="first_name", type="string"),
- *     @OA\Property(property="second_name", type="string"),
+ *     allOf={@OA\Schema(ref="#/components/schemas/UserNameSurname")},
  *     @OA\Property(property="email", type="string")
+ * )
+ * @OA\Schema(
+ *     schema="UserBriefId",
+ *     allOf={@OA\Schema(ref="#/components/schemas/UserNameSurname")},
+ *     @OA\Property(property="id", type="integer")
  * )
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
@@ -263,4 +273,5 @@ class User implements UserInterface
 
         return $this;
     }
+
 }

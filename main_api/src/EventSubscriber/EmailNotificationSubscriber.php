@@ -26,11 +26,11 @@ class EmailNotificationSubscriber  implements EventSubscriberInterface
     public function onUserChangesEmail(UserChangesEmailEvent $event)
     {
         $user = $event->getUser();
-        $email = $user->getEmail();
+        $email = $user->getNewEmail();
         $context = [
             'first_name' => $user->getFirstName(),
             'second_name' => $user->getSecondName(),
-            'email' => $email,
+            'new_email' => $email,
             'link' => $event->getLink(),
             'workspace_name' => $this->workspace_name
         ];

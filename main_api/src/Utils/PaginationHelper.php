@@ -35,15 +35,24 @@ class PaginationHelper
             {
                 return $this->size;
             }
+
+            public function getFirstResultNumber():int
+            {
+                return ($this->number - 1) * $this->size;
+            }
+            public function getMaxResultNumber():int
+            {
+                return self::getFirstResultNumber() + $this->size;
+            }
         };
     }
 
-    public function paginate(Paginator $paginator, NormalizerInterface $normalizer): array
+    public function paginate(Paginator $paginator, NormalizerInterface $normalizer, array $normalize_option = []): array
     {
         $items = [];
         foreach ($paginator as $item)
         {
-            $items[] = $normalizer->normalize($item);
+            $items[] = $normalizer->normalize($item, null, $normalize_option);
         }
         return $items;
     }

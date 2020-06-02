@@ -5,7 +5,9 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ManagerRegistry;
+use phpDocumentor\Reflection\Types\Collection;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -161,6 +163,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setMaxResults(1)
             ->getOneOrNullResult();
         ;
+    }
+
+    public function findActiveUsersByIdsAndRoles(array $ids, array $roles =  User::ROLE_USER): ? array
+    {
+        return $this->_em->createQuery('SELECT u FROM App\Entity\User u WHERE u.id IN (:ids) AND u.isActive = 1 AND u.isLocked = 0 AND u.roles LIKE :roles ')->setParameter('ids', $ids)->setParameter('roles', "%".$roles[0]."%")->execute();
     }
 
 
