@@ -9,10 +9,13 @@ use App\Entity\Topic;
 use App\Entity\TopicUser;
 use App\Entity\User;
 use App\Events\Project\ProjectCreatedEvent;
+use App\Events\Project\ProjectNameUpdateEvent;
 use App\Form\Project\ProjectType;
+use App\Form\Project\UpdateProjectNameType;
 use App\Repository\UserRepository;
 use App\Response\ApiResponse;
 use App\Serializer\Normalizer\ProjectNormalizer;
+use App\Serializer\Normalizer\ProjectUserNormalizer;
 use App\Serializer\Normalizer\TopicNormalizer;
 use App\Utils\PaginationHelper;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -74,13 +77,14 @@ class ProjectController extends AbstractController
             $members = $userRepository->findActiveUsersByIdsAndRoles($form->get('member_ids')->getData(), User::ROLE_USER);
 
             foreach ($members as $member){
-                $em->persist(new ProjectUser($member, $project));
-                $em->persist(new TopicUser($member, $mainTopic));
+                $user = $em->getReference(User::class, $member);
+                $em->persist(new ProjectUser($user, $project));
+                $em->persist(new TopicUser($user, $mainTopic));
             }
 
             $em->flush();
 
-            $dispatcher->dispatch(new ProjectCreatedEvent($project, $mainTopic));
+            $dispatcher->dispatch(new ProjectCreatedEvent($project, $mainTopic, $members));
             return ApiResponse::createSuccessResponse(
                 [
                     'project' => $projectNormalizer->normalize($project),
@@ -134,13 +138,19 @@ class ProjectController extends AbstractController
      * )
      * @Route("/api/projects/{id<\d+>}", methods={"GET"})
      */
-    public function getProject(int $id, Request $request)
+    public function getProject(int $id, Request $request, ProjectNormalizer $projectNormalizer, ProjectUserNormalizer $projectUserNormalizer)
     {
         $repository = $this->getDoctrine()->getRepository(Project::class);
         $project = ($this->isGranted("ROLE_MODERATOR"))? $repository->find($id): $repository->findProjectForUser($id, $this->getUser());
         if(!is_null($project)){
-            var_dump($project);
-            return new Response();
+            $members = $this->getDoctrine()->getRepository(ProjectUser::class)->findProjectMembers($project);
+
+            return ApiResponse::createSuccessResponse(
+                [
+                    $projectNormalizer->normalize($project, null, ProjectNormalizer::DETAILED_OUTPUT) +
+                    ['members' => $projectUserNormalizer->normalize($members)]
+                ]
+            );
         }
         throw new NotFoundHttpException('Project not found!');
 
@@ -152,6 +162,7 @@ class ProjectController extends AbstractController
      *     tags={"projects"},
      *     security={{"bearer":{}}},
      *     description="Update project name",
+     *     @OA\Parameter(ref="#/components/parameters/id"),
      *     @OA\RequestBody(ref="#/components/requestBodies/UpdateName"),
      *     @OA\Response(
      *         response=200,
@@ -165,10 +176,18 @@ class ProjectController extends AbstractController
      *     @OA\Response(response=403, ref="#/components/responses/Error403")
      * )
      * @Route("/api/projects/{id<\d+>}/name", methods={"PUT"})
+     * @Security("is_granted('ROLE_MODERATOR')")
      */
-    public function updateProjectName()
+    public function updateProjectName(Request $request, ?Project $project, EventDispatcherInterface $dispatcher)
     {
-        return new Response();
+        if(is_null($project)) throw new NotFoundHttpException('Project not found');
+        $form = $this->createForm(UpdateProjectNameType::class, $project);
+        if($form->submit($request->request->all())->isValid()) {
+            $this->getDoctrine()->getRepository(Project::class)->save($project);
+            $dispatcher->dispatch(new ProjectNameUpdateEvent($project));
+            return ApiResponse::createSuccessResponse(['name' => $project->getName()]);
+        }
+        throw new BadRequestHttpException('Bad content!');
     }
     /**
      * @OA\Patch(

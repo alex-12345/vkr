@@ -51,19 +51,19 @@ class ProjectUser
         return $this->user;
     }
 
-    public function setUserId(?User $user): self
+    public function setUser(?User $user): self
     {
         $this->user = $user;
 
         return $this;
     }
 
-    public function getProjectId(): ?Project
+    public function getProject(): ?Project
     {
         return $this->project;
     }
 
-    public function setProjectId(?Project $project): self
+    public function setProject(?Project $project): self
     {
         $this->project = $project;
 

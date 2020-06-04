@@ -11,11 +11,13 @@ class ProjectCreatedEvent extends Event
 {
     private Project $project;
     private Topic $mainTopic;
+    private array $members;
 
-    public function __construct(Project $project, Topic $mainTopic)
+    public function __construct(Project $project, Topic $mainTopic, array $members)
     {
         $this->project = $project;
         $this->mainTopic = $mainTopic;
+        $this->members = $members;
     }
 
     public function getProject(): Project
@@ -26,6 +28,11 @@ class ProjectCreatedEvent extends Event
     public function getMainTopic(): Topic
     {
         return $this->mainTopic;
+    }
+
+    public function getMembers(): array
+    {
+        return $this->members;
     }
 
 

@@ -167,8 +167,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function findActiveUsersByIdsAndRoles(array $ids, array $roles =  User::ROLE_USER): ? array
     {
-        return $this->_em->createQuery('SELECT u FROM App\Entity\User u WHERE u.id IN (:ids) AND u.isActive = 1 AND u.isLocked = 0 AND u.roles LIKE :roles ')->setParameter('ids', $ids)->setParameter('roles', "%".$roles[0]."%")->execute();
+        $query = $this->_em->createQuery('SELECT u.id FROM App\Entity\User u WHERE u.id IN (:ids) AND u.isActive = 1 AND u.isLocked = 0 AND u.roles LIKE :roles ')->setParameter('ids', $ids)->setParameter('roles', "%".$roles[0]."%");
+        return array_map(fn($i)=>$i['id'], $query->getResult());
     }
 
+
+    //Not entity return
+
+    public function findProjectMembersIds(int $project_id): ?array
+    {
+        $query = $this->_em->createQuery('SELECT u.id FROM App\Entity\ProjectUser pu INNER JOIN pu.user u WHERE pu.project = :project')->setParameter('project', $project_id);
+        return array_map(fn($i)=>$i['id'], $query->getResult());
+    }
 
 }

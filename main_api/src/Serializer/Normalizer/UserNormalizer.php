@@ -56,18 +56,23 @@ use OpenApi\Annotations as OA;
  */
 class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
-    const DETAILED_OUTPUT = ['description','roles', 'is_active', 'is_locked', 'registration_date'];
-    const FULL_OUTPUT = ['description','roles', 'is_active', 'is_locked', 'registration_date', 'new_email'];
+    //todo refactor this
+    const WITHOUT_EMAIL_TINY_OUTPUT = [];
+    const TINY_OUTPUT = ['email'];
+    const DETAILED_OUTPUT = ['email', 'description','roles', 'is_active', 'is_locked', 'registration_date'];
+    const FULL_OUTPUT = ['email','description','roles', 'is_active', 'is_locked', 'registration_date', 'new_email'];
 
-    public function normalize($object, string $format = null, array $context = []): array
+    public function normalize($object, string $format = null, array $context = self::TINY_OUTPUT): array
     {
         $data = [
             "id" => $object->getId(),
             "first_name" => $object->getFirstName(),
             "second_name" => $object->getSecondName(),
-            "email" => $object->getEmail(),
             "main_photo" => $object->getMainPhoto(),
         ];
+        if(in_array('email', $context)){
+            $data["email"] = $object->getEmail();
+        };
         if(in_array('description', $context)){
             $data["description"] = $object->getDescription();
         };

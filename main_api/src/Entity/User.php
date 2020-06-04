@@ -22,7 +22,8 @@ use OpenApi\Annotations as OA;
  * @OA\Schema(
  *     schema="UserBriefId",
  *     allOf={@OA\Schema(ref="#/components/schemas/UserNameSurname")},
- *     @OA\Property(property="id", type="integer")
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="main_photo", type="string")
  * )
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */

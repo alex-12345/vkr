@@ -41,6 +41,13 @@ use OpenApi\Annotations as OA;
  * */
 class ProjectNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
+    const DETAILED_OUTPUT = ['creator', 'created_at'];
+
+    private UserNormalizer $userNormalizer;
+    public function __construct(UserNormalizer $userNormalizer)
+    {
+        $this->userNormalizer = $userNormalizer;
+    }
 
     public function normalize($object, ?string $format = null, array $context = []): array
     {
@@ -48,6 +55,17 @@ class ProjectNormalizer implements NormalizerInterface, CacheableSupportsMethodI
           'id' => $object->getId(),
           'name' => $object->getName()
         ];
+
+        if(in_array('created_at', $context))
+        {
+            $data["created_at"] = $object->getCreatedAt()->format(\DateTimeInterface::ISO8601);
+        }
+
+        if(in_array('creator', $context))
+        {
+            //TODO redactor default user normalizer output
+            $data["creator"] = $this->userNormalizer->normalize($object->getCreator(), null, UserNormalizer::WITHOUT_EMAIL_TINY_OUTPUT);
+        }
 
         return $data;
     }
