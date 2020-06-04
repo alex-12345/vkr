@@ -1,0 +1,14 @@
+{
+    "name": "alex-12345/notification_server",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Alex Vinnikov",
+            "email": "vin-nikov@yandex.ru"
+        }
+    ],
+    "require": {
+        "workerman/workerman": "^4.0",
+        "lcobucci/jwt": "^3.3"
+    }
+}
