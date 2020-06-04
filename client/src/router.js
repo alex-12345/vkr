@@ -12,13 +12,13 @@ const ifNotAuthenticated = (to, from, next) => {
     next('/chat')
 }
   
-/*const ifAuthenticated = (to, from, next) => {
+const ifAuthenticated = (to, from, next) => {
     if (store.getters.isAuthenticated) {
       next()
       return
     }
     next('/authorization')
-}*/
+}
 
 export default new Router({
     mode: 'history',
@@ -43,13 +43,29 @@ export default new Router({
                 {
                     path: 'registrationUser',
                     component: () => import('./views/NotAuthenticated/RegistrationUserPage')
-                } 
+                },
+                {
+                    path: 'confirm',
+                    component: () => import('./views/NotAuthenticated/Confirm')
+                },
+                {
+                    path: 'confirmEmail',
+                    component: () => import('./views/NotAuthenticated/ConfirmEmail')
+                },  
+                {
+                    path: 'forgotPassword',
+                    component: () => import('./views/NotAuthenticated/ForgotPassword')
+                },  
+                {
+                    path: 'confirmPassword',
+                    component: () => import('./views/NotAuthenticated/ConfirmPassword')
+                },
             ]
         },
         {
             path: '/chat',
             component: () => import('./views/Authenticated/MainPage.vue'),
-            //beforeEnter: ifAuthenticated,
+            beforeEnter: ifAuthenticated,
             children: [
                 {
                     path: 'settings',
@@ -64,6 +80,6 @@ export default new Router({
                     component: () => import('./views/Authenticated/Chat/Message/Chat'),
                 },
             ]
-        }    
+        },   
     ]
 })

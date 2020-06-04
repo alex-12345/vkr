@@ -56,7 +56,6 @@
         },
         computed: mapGetters([
             "subChats",
-            "showCross"
         ]),
         methods: {
             ...mapActions(['changeShowSubChats', 'changeSelectedChat', 'changeSelectedChatId']),

@@ -2,69 +2,94 @@ import axios from 'axios'
 
 export default {
     state: {
-        user: {
-            "username": '',
-            "password": ''
-        },
-        token: localStorage.getItem("user-token") || "",
         status: "",
     },
     getters: {
-        getUser: state => state.user,
-        isAuthenticated: state => !!state.token,
         authStatus: state => state.status
     },
     actions: {
-        addUser(ctx, userData) {
-            ctx.commit('updateUser', userData)
-        },
-        authRequest(ctx, user) {
+        authRequest(ctx, object) {
             return new Promise(function(resolve, reject) {
-                ctx.commit('updateAuthRequest')
-                axios.post('http://sapechat.ru/api/auth/login_check', user)
+                axios.post('http://' + object.domainName + '/api/auth/login_check', {username: object.username, password: object.password })
                 .then(response => {
-                    const token = response.data.token
-                    localStorage.setItem('user-token', token)
-                    axios.defaults.headers.common['Authorization'] = token
-                    ctx.commit('updateAuthSuccess', token)
+                    localStorage.domainName = object.domainName
+
+                    //Вызов мутаций из tokenStorage.js
+                    ctx.commit('updateToken', response.data.token)
+                    ctx.commit('updateRefreshToken', response.data.refresh_token)
+
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+
+                    ctx.commit('updateAuthSuccess')
                     ctx.commit('updateSubmitStatusLogin', 'OK')
                     resolve (response.data)
                 })
                 .catch(error => {
-                    console.log('error: ', error)
-                    localStorage.removeItem('user-token')
+                    ctx.commit('deleteToken')
+                    ctx.commit('deleteRefreshToken')
+
                     ctx.commit('updateAuthSuccess')
-                    ctx.commit('updateSubmitStatusLogin', 'ERROR')
+                    reject (error)
+                });
+            });
+        },
+        createRequestPasswordChange(ctx, object) {
+            console.log('email: ', object)
+            return new Promise(function(resolve, reject) {
+                axios.post('http://' + object.domainName + '/api/recovery', {email: object.email, link: object.link})
+                .then(response => {
+                    localStorage.idRequestPasswordChange = response.data.data.id
+                    resolve (response.data)
+                })
+                .catch(error => {
                     reject (error.data)
+                });
+            })
+        },
+        checkRecovey(ctx, object) {
+            return new Promise(function(resolve, reject) {
+                axios.get('http://' + localStorage.domainName + '/api/recovery/'+ object.id +'/status?hash=' + object.hash)
+                .then(response => {
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
+                });
+            });
+        },
+        confirmPasswordChange(ctx, object) {
+            return new Promise(function(resolve, reject) {
+                axios.put('http://' + localStorage.domainName + '/api/recovery/'+ object.id +'/status', {hash: object.hash, password: object.password})
+                .then(response => {
+                    ctx.commit('updateToken', response.data.token)
+                    ctx.commit('updateRefreshToken', response.data.refresh_token)
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+                    resolve (response.data)
+                })
+                .catch(error => {
+                    reject (error)
                 });
             });
         },
         authLogout(ctx) {
             return new Promise(function(resolve) {
-                ctx.commit('updateAuthLogout')
-                localStorage.removeItem('user-token')
+                ctx.commit('deleteToken')
+                ctx.commit('deleteRefreshToken')
+                ctx.commit('deleteUser')
                 delete axios.defaults.headers.common['Authorization']
                 resolve()
             })
         }
     },
     mutations: {
-        updateUser(state, userData) {
-            state.user.username = userData.name
-            state.user.password = userData.pass
-        },
         updateAuthRequest(state) {
             state.status = 'loading'
         },
-        updateAuthSuccess(state, token) {
+        updateAuthSuccess(state) {
             state.status = 'success'
-            state.token = token
         },
         updateAuthError(state) {
             state.status = 'error'
         },
-        updateAuthLogout(state) {
-            state.token = "";
-        }
     }
 }

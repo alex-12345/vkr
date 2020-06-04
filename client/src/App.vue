@@ -16,6 +16,8 @@ export default {
 </script>
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600&family=Roboto&display=swap');
+
   *{ 
         padding: 0; 
         margin: 0; 
@@ -27,10 +29,10 @@ export default {
   }
 
   #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
+    color: #2c2843;
     height: 100%;
   }
 </style>

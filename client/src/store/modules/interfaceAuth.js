@@ -13,16 +13,16 @@ export default {
                     {id: 2, title: "Поле обязательно для заполнения", error: true},
                 ]
             },
-            {id: 3, title: 'Ip адрес', type: 'text', required: true, error: false, ipAddress: true,
+            {id: 3, title: 'Доменное имя', type: 'text', required: true, error: false, url: true,
                 warningItemArr: [
-                    {id: 1, title: "Ip адрес должен быть формата 0.0.0.0", error: true},
-                    {id: 2, title: "Поле обязательно для заполнения", error: true},
+                    {id: 1, title: "Некорректное доменное имя", error: true},
+                    {id: 2, title: "Поле обязательно для заполнения", error: true}
                 ]
             },
         ],
         email: '',
-        ipAddress: '',
         password: '',
+        domainNameLogin: '',
         submitStatus: null
     },
     actions: {
@@ -38,11 +38,11 @@ export default {
         changePasswordLogin(ctx, password) {
             ctx.commit('updatePasswordLogin', password)
         },
-        changeValidationIpAddressLogin(ctx, vIpAddress) {
-            ctx.commit('updateValidationIpAddressLogin', vIpAddress)
+        changeValidationDomainNameLogin(ctx, vDomainName) {
+            ctx.commit('updateValidationDomainNameLogin', vDomainName)
         },
-        changeIpAddressLogin(ctx, ipAddress) {
-            ctx.commit('updateIpAddressLogin', ipAddress)
+        changeDomainNameLogin(ctx, domainName) {
+            ctx.commit('updateDomainNameLogin', domainName)
         },
         changeSubmitStatusLogin(ctx, value) {
             ctx.commit('updateSubmitStatusLogin', value)
@@ -69,15 +69,15 @@ export default {
         updatePasswordLogin(state, password) {
             state.password = password
         },
-        updateValidationIpAddressLogin(state, vIpAddress) {
-            state.formItemArr[2].error = vIpAddress.invalid
-            state.formItemArr[2].required = vIpAddress.required
-            state.formItemArr[2].warningItemArr[1].error = vIpAddress.required
-            state.formItemArr[2].ipAddress = vIpAddress.ipAddress
-            state.formItemArr[2].warningItemArr[0].error = vIpAddress.ipAddress
+        updateValidationDomainNameLogin(state, vDomainName) {
+            state.formItemArr[2].error = vDomainName.invalid
+            state.formItemArr[2].required = vDomainName.required
+            state.formItemArr[2].warningItemArr[1].error = vDomainName.required
+            state.formItemArr[2].url = vDomainName.url
+            state.formItemArr[2].warningItemArr[0].error = vDomainName.url
         },
-        updateIpAddressLogin(state, ipAddress) {
-            state.ipAddress = ipAddress
+        updateDomainNameLogin(state, domainName) {
+            state.domainNameLogin = domainName
         },
         updateSubmitStatusLogin(state, value) {
             state.submitStatus = value
@@ -90,11 +90,11 @@ export default {
         emailLogin(state) {
             return state.email
         },
-        ipAddressLogin(state) {
-            return state.ipAddress
-        },
         passwordLogin(state) {
             return state.password
+        },
+        domainNameLogin(state) {
+            return state.domainNameLogin
         },
         submitStatusLogin(state) {
             return state.submitStatus

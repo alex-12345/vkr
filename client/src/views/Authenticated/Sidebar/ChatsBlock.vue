@@ -47,7 +47,7 @@
             ...mapActions(['changeShowChats']),
             changeShow() {
                 this.changeShowChats()
-                this.$router.push("/chat/messages");
+                this.$router.push("/chat/messages").catch(() => {});
             }
         },
         components: {
@@ -85,7 +85,7 @@
         height: 45px;
         position: relative;
         display: block;
-        margin: 5px auto;
+        margin: 0px auto;
         background-color: inherit;
         border-radius: 10px;
     }

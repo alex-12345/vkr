@@ -2,7 +2,7 @@
     <div class="registrationPage">
         <div class="registrationForm">
             <h1>Sapechat</h1>
-            <h2>Зарегистрируйте вашу площадку</h2>
+            <h2>Настройте площадку</h2>
             <form class="r-form" @submit.prevent="onSubmit">
                 <FormItem 
                     v-for="formItem of formItemArrRegisterPage" :key="formItem.id"
@@ -18,31 +18,27 @@
 </template>
 
 <script>
-    //import axios from 'axios'
     import FormItem from '@/components/inputForm/FormItem'
     import ButtonItem from '@/components/inputForm/Button'
     import { mapGetters, mapActions } from 'vuex'
-    import { required, minLength, ipAddress } from 'vuelidate/lib/validators'
+    import { required, minLength, helpers } from 'vuelidate/lib/validators'
+    const url = helpers.regex('url', /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/)
 
     export default {
         computed: mapGetters([ 
-            "formItemArrRegisterPage", 
-            "titleRegisterPage", 
-            "ipAddressRegisterPage", 
-            "accessKeyRegisterPage", 
+            "formItemArrRegisterPage",  
+            "accessKeyRegisterPage",
+            "domainNameRegisterPage", 
             "submitStatusRegisterPage"
         ]),
         validations: {
-            ipAddressRegisterPage: {
-                required,
-                ipAddress
-            },
             accessKeyRegisterPage: {
                 required,
                 minLength: minLength(4)
             },
-            titleRegisterPage: {
-                required
+            domainNameRegisterPage: {
+                required,
+                url
             }
         },
         components: {
@@ -51,71 +47,44 @@
         },
         methods: {
             ...mapActions([ 
-                'changeValidationTitleRegisterPage', 
-                'changeTitleRegisterPage', 
                 'changeValidationAccessKeyRegisterPage', 
-                'changeAccessKeyRegisterPage', 
-                'changeValidationIpAddressRegisterPage', 
-                'changeIpAddressRegisterPage', 
+                'changeAccessKeyRegisterPage',
+                'changeDomainNameRegisterPage', 
+                'changeValidationDomainNameRegisterPage',
                 'changeSubmitStatusRegisterPage',
-                'changeHeaderItems'
+                'workspaceInfo'
             ]),
             processValue: function (answer) {
-                if (answer.title === 'Название')
-                {
-                    this.changeTitleRegisterPage(answer.value)
-                    this.changeValidationTitleRegisterPage({invalid: this.$v.titleRegisterPage.$invalid, required: this.$v.titleRegisterPage.required})
-                }
-                else if (answer.title === 'Ключ доступа') {
+                if (answer.title === 'Ключ доступа') {
                     this.changeAccessKeyRegisterPage(answer.value)
                     this.changeValidationAccessKeyRegisterPage({invalid: this.$v.accessKeyRegisterPage.$invalid, required: this.$v.accessKeyRegisterPage.required, minLength: this.$v.accessKeyRegisterPage.minLength})
                 }
-                else if (answer.title === 'Ip адрес') {
-                    this.changeIpAddressRegisterPage(answer.value)
-                    this.changeValidationIpAddressRegisterPage({invalid: this.$v.ipAddressRegisterPage.$invalid, required: this.$v.ipAddressRegisterPage.required, ipAddress: this.$v.ipAddressRegisterPage.ipAddress})
+                else if (answer.title === 'Доменное имя') {
+                    this.changeDomainNameRegisterPage(answer.value)
+                    this.changeValidationDomainNameRegisterPage({invalid: this.$v.domainNameRegisterPage.$invalid, required: this.$v.domainNameRegisterPage.required, url: this.$v.domainNameRegisterPage.url})
                 }
             },
             onSubmit: function () {
                 this.$v.$touch()
                 if (this.$v.$invalid) {
                     this.changeSubmitStatusRegisterPage('ERROR')
-                    if (this.$v.titleRegisterPage.$invalid) {
-                        this.changeValidationTitleRegisterPage({invalid: this.$v.titleRegisterPage.$invalid, required: this.$v.titleRegisterPage.required})
-                    }
                     if (this.$v.accessKeyRegisterPage.$invalid) {
                         this.changeValidationAccessKeyRegisterPage({invalid: this.$v.accessKeyRegisterPage.$invalid, required: this.$v.accessKeyRegisterPage.required, minLength: this.$v.accessKeyRegisterPage.minLength})
                     }
-                    if (this.$v.ipAddressRegisterPage.$invalid) {
-                        this.changeValidationIpAddressRegisterPage({invalid: this.$v.ipAddressRegisterPage.$invalid, required: this.$v.ipAddressRegisterPage.required, ipAddress: this.$v.ipAddressRegisterPage.ipAddress})
+                    if (this.$v.domainNameRegisterPage.$invalid) {
+                        this.changeValidationDomainNameRegisterPage({invalid: this.$v.domainNameRegisterPage.$invalid, required: this.$v.domainNameRegisterPage.required, url: this.$v.domainNameRegisterPage.url})
                     }
                 } else {
                     console.log('submit!')
-                    const user = {
-                        title: this.titleRegisterPage,
-                        ipAddress: this.ipAddressRegisterPage,
-                        accessKey: this.accessKeyRegisterPage
-                    }
-                    console.log(user)
+                    
                     // do your submit logic here
                     this.changeSubmitStatusRegisterPage('PENDING')
-                    /*axios.post('https://', platform)
-                    .then(response => {
-                        console.log(response);
-                        this.submitStatus = 'OK'
+                    
+                    this.workspaceInfo({key: this.accessKeyRegisterPage, domainName: this.domainNameRegisterPage}).then(() => {
+                        this.$router.push("/registrationUser");
                     })
-                    .catch(error => {
-                        console.log(error);
-                        this.submitStatus = 'ERROR'
-                    });*/
-                    setTimeout(() => {
-                        this.changeSubmitStatusRegisterPage('OK')
-                        this.$router.push('/')
-                    }, 500)
                 }
             }
-        },
-        mounted: function () {
-            this.changeHeaderItems(4)
         }
     }
 </script>
@@ -129,7 +98,7 @@
 
     .registrationForm{
         margin: 150px auto;
-        height: 405px;
+        height: 360px;
         width: 370px;
         border: 1px solid #dbdbdb;
         background-color: white;
@@ -141,7 +110,7 @@
     }
 
     .r-form{
-        margin: 10px auto;
+        margin: 20px auto;
         padding: 0px 40px;
     }
 </style>

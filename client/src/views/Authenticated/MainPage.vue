@@ -7,12 +7,8 @@
 
 <script>
     import Sidebar from '@/views/Authenticated/Sidebar/Sidebar'
-    import {mapGetters} from 'vuex'
     
     export default {
-        computed: mapGetters([
-            "selectedChat",
-        ]),
         components: {
             Sidebar,
         },

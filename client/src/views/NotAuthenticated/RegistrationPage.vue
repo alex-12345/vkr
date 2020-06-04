@@ -4,9 +4,9 @@
             <div class="registrationPlatform">
                 <div class="text">
                     <h2>Попробуйте Sapechat со своей командой</h2>
-                    <p>Зарегистрируйте новое рабочее пространство для вас и вашей команды.</p>
+                    <p>Настройте рабочее пространство для вас и вашей команды.</p>
                 </div>                
-                <button type="button" v-on:click="send('/registrationPlatform')">Зарегистрировать рабочее пространство</button>
+                <button type="button" v-on:click="send('/registrationPlatform')">Настроить рабочее пространство</button>
             </div>
             <div class="registrationUser">
                 <div class="text">
@@ -60,7 +60,7 @@
     .registrationPlatform{
         float: left;
         border-right: 1px solid #9e9e9e;
-        background-color: #5e90ff;
+        background-color: #2c2843;
         color: white;
     }
 
@@ -93,7 +93,7 @@
     }
 
     .registrationUser button {
-        background-color: #5e90ff;
+        background-color: #2c2843;
         color: white;
     }
 </style>
