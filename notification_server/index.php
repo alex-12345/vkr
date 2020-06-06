@@ -8,13 +8,19 @@ use Lcobucci\JWT\ValidationData;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$storage = [
-    'ROLE_USER' => [],
-    'ROLE_MODERATOR' => [],
-    'ROLE_ADMIN' => [],
-    'ROLE_SUPER_ADMIN' => []
-];
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
+$httpServerURL = $_ENV['HTTP_SERVER'];
+$wsServerURL = $_ENV['WS_SERVER'];
+
+$publicKeyPath = $_ENV['PUBLIC_KEY'];
+$appSecret = $_ENV['APP_SECRET'];
+
+//$msg_storage[user_id][msg_stack]
+$msg_storage = [];
+
+//$ws_connections[ROLE_][user_id][connection array]
 $ws_connections = [
     'ROLE_USER' => [],
     'ROLE_MODERATOR' => [],
@@ -22,13 +28,13 @@ $ws_connections = [
     'ROLE_SUPER_ADMIN' => []
 ];
 
-$ws_worker = new Worker("websocket://0.0.0.0:8001");
-$publicKey = new Key('file://jwt/public.pem');
+$ws_worker = new Worker($wsServerURL);
+$publicKey = new Key('file://'.$publicKeyPath);
 $signer = new Sha256();
 
-$ws_worker->onConnect = function($connection) use (&$ws_connections, &$publicKey, &$signer)
+$ws_worker->onConnect = function($connection) use (&$ws_connections, &$msg_storage, &$publicKey, &$signer)
 {
-    $connection->onWebSocketConnect = function($connection) use (&$ws_connections, &$publicKey, &$signer)
+    $connection->onWebSocketConnect = function($connection) use (&$ws_connections, &$msg_storage, &$publicKey, &$signer)
     {
         $encodeToken = $_GET['token'] ?? '';
         try {
@@ -36,7 +42,7 @@ $ws_worker->onConnect = function($connection) use (&$ws_connections, &$publicKey
         }
         catch (Exception $e)
         {
-            $connection->close(json_encode(['error' => ['code' => '400', 'Bad content!']]));
+            $connection->close(json_encode(['error' => ['code' => 400, 'Bad content!']]));
         }
 
         if(isset($token)) {
@@ -45,14 +51,18 @@ $ws_worker->onConnect = function($connection) use (&$ws_connections, &$publicKey
                 if($token->verify($signer, $publicKey)){
                     $roles = implode($token->getClaim('roles'));
                     $user_id =  $token->getClaim('id');
-                    //TODO REFACTOR THIS
-                    $ws_connections[$roles][$user_id] = $connection;
+                    if(isset($msg_storage[$user_id]) and is_array($msg_storage[$user_id]) and count($msg_storage[$user_id]) > 0)
+                    {
+                        $connection->send(json_encode($msg_storage[$user_id]));
+                    }
+                    $ws_connections[$roles][$user_id][] = $connection;
+                    //echo 'user '.$user_id.' connected';
                 }else{
-                    $connection->close(json_encode(['error' => ['code' => '403', 'Invalid VERIFY SIGNATURE!']]));
+                    $connection->close(json_encode(['error' => ['code' => 403, 'Invalid VERIFY SIGNATURE!']]));
                 };
 
             }else{
-                $connection->close(json_encode(['error' => ['code' => '401', 'Token expired!']]));
+                $connection->close(json_encode(['error' => ['code' => 401, 'Token expired!']]));
             }
         }
 
@@ -61,35 +71,73 @@ $ws_worker->onConnect = function($connection) use (&$ws_connections, &$publicKey
 
 $ws_worker->onClose = function($connection) use(&$ws_connections)
 {
-    for($i = 0, $user = false; $user && $i < count($ws_connections); $i++){
-        $user = array_search($connection, $ws_connections[$i]);
-        if(!$user) unset($ws_connections[$i][$user]);
+    foreach($ws_connections as $role_name => $role_connections){// O(4)
+        foreach ($role_connections as $user_id => $user){ //O(n), n - amount connected users
+            if(!is_array($user)) continue;
+            foreach($user as $connection_id => $user_connection)  // O(m) m - connections per user (avg 1 - 5)
+            {
+                if($connection === $user_connection)
+                {
+                    unset($ws_connections[$role_name][$user_id][$connection_id]);
+                    if(count($ws_connections[$role_name][$user_id]) === 0) unset($ws_connections[$role_name][$user_id]);
+                    //echo 'user '.$user_id.' disconnected';
+                    break 3;
+                }
+            }
+        }
     }
 };
 
-$ws_worker->onWorkerStart = function() use (&$ws_connections) {
+$ws_worker->onWorkerStart = function() use (&$ws_connections, &$msg_storage, &$httpServerURL, &$appSecret) {
 
-    $http_worker = new Worker('http://0.0.0.0:2345');
+    $http_worker = new Worker($httpServerURL);
 
-    $http_worker->onMessage = function ($http_connection, $request) use (&$ws_connections)  {
-
+    $http_worker->onMessage = function ($http_connection, $request) use (&$ws_connections, &$msg_storage, &$appSecret)  {
         $json_data = $request->post()['json_data'] ?? '';
         $token = $request->get()['token'] ?? '';
 
-        if (sha1($json_data . 'e819a74eba9e4c4e2db44a100164019a') === $token) {
+        if (sha1($json_data . $appSecret) === $token) {
             $data = json_decode($json_data, true);
 
             $notificationsRoles = $data["notifications_roles"];
             $notificationsUserIds = $data['notifications_user_ids'];
             $output_data = $data['output_data'];
 
-            //TODO find connection and emitt it and add to store
+            $sendingData = json_encode($output_data);
 
-            $http_connection->send("Correct");
+            foreach($notificationsUserIds as $user_id)
+            {
+                if($output_data['event_name'] == 'MessageCreated') {
+                    //TODO add removing messages
+                    $msg_storage[$user_id] [] = $output_data;
+                }
+                if(isset($ws_connections['ROLE_USER'][$user_id]) && count($ws_connections['ROLE_USER'][$user_id]) > 0)
+                {
+                    foreach ($ws_connections['ROLE_USER'][$user_id] as $connection)
+                    {
+                        $connection->send($sendingData);
+                    }
+                }
+            }
+
+            foreach ($notificationsRoles as $notifyRole) // max 3 iteration
+            {
+                foreach ($ws_connections[$notifyRole] as $notifyUser) //amount active users
+                {
+                    if(count($notifyUser) > 0) {
+                        foreach ($notifyUser as $connection){ // max - amount connection per user
+                            $connection->send($sendingData);
+                        }
+                    }
+                }
+            }
+
+            $http_connection->send(json_encode(['code' => 200]));
         } else {
-            $http_connection->send("bad request");
+            $http_connection->send(json_encode(['error' => ['code' => 400, 'Bad request!']]));
         };
     };
+    $http_worker->listen();
 };
 
 Worker::runAll();

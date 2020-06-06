@@ -9,6 +9,7 @@
     ],
     "require": {
         "workerman/workerman": "^4.0",
-        "lcobucci/jwt": "^3.3"
+        "lcobucci/jwt": "^3.3",
+        "vlucas/phpdotenv": "^4.1"
     }
 }
