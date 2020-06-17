@@ -12,7 +12,7 @@ use OpenApi\Annotations as OA;
  *     url="http://sapechat.ru"
  * )
  * @OA\Server(
- *     url="http://localhost:8000"
+ *     url="http://localhost:8010"
  * )
  * @OA\Tag(
  *     name="auth",
@@ -37,6 +37,18 @@ use OpenApi\Annotations as OA;
  * @OA\Tag(
  *     name="projects",
  *     description="Operations about projects"
+ * )
+ * @OA\Tag(
+ *     name="topics",
+ *     description="Operations about topics"
+ * )
+ * @OA\Tag(
+ *     name="messages",
+ *     description="Operations about messages"
+ * )
+ * @OA\Tag(
+ *     name="files",
+ *     description="Operations about files"
  * )
  * @OA\Parameter(
  *     name="id",

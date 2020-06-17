@@ -2,3 +2,5 @@
 /.idea
 /doc
 /client/node_modules
+/*.log
+/.vagrant

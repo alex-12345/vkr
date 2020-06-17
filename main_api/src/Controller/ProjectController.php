@@ -215,6 +215,80 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @OA\Patch(
+     *     path="/api/projects/{id}/moderators",
+     *     tags={"projects"},
+     *     security={{"bearer":{}}},
+     *     description="Update project moderators",
+     *     @OA\RequestBody(@OA\JsonContent(@OA\Property(property="name"), type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Project moderators update completed successfully",
+     *         @OA\JsonContent(
+     *              @OA\Property(property="data", type="string")
+     *          )
+     *     ),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403")
+     * )
+     * @Route("/api/projects/{id<\d+>}/moderators", methods={"PATCH"})
+     */
+    public function updateProjectModerators()
+    {
+        return new Response();
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/projects/{id}/files",
+     *     tags={"topics"},
+     *     security={{"bearer":{}}},
+     *     description="Show project files",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Finded project files",
+     *         @OA\JsonContent(
+     *              @OA\Property(property="data", type="string")
+     *          )
+     *     ),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403")
+     * )
+     * @Route("/api/projects/{id}/files", methods={"GET"})
+     */
+    public function showAttachFiles()
+    {
+        return new Response();
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/projects/{id}/files",
+     *     tags={"projects"},
+     *     security={{"bearer":{}}},
+     *     description="Update project files",
+     *     @OA\RequestBody(@OA\JsonContent(@OA\Property(property="name"), type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Project files list update completed successfully",
+     *         @OA\JsonContent(
+     *              @OA\Property(property="data", type="string")
+     *          )
+     *     ),
+     *     @OA\Response(response=400, ref="#/components/responses/Error400"),
+     *     @OA\Response(response=401, ref="#/components/responses/Error401JWT"),
+     *     @OA\Response(response=403, ref="#/components/responses/Error403")
+     * )
+     * @Route("/api/projects/{id<\d+>}/files", methods={"PATCH"})
+     */
+    public function updateProjectFiles()
+    {
+        return new Response();
+    }
+
+    /**
      * @OA\Delete(
      *     path="/api/projects/{id}",
      *     tags={"projects"},
