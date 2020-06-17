@@ -2,7 +2,8 @@ Vagrant.configure("2") do |config|
 
 	config.env.enable
 	config.vm.box = "ubuntu/xenial64"
-
+	
+	config.vm.network "forwarded_port", guest: 25, host: 25, protocol: "tcp"
 	config.vm.network "forwarded_port", guest: 8010, host: 8010, protocol: "tcp"
 	config.vm.network "forwarded_port", guest: 8012, host: 8012, protocol: "tcp"
 
