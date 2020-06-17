@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
 	config.vm.network "forwarded_port", guest: 8012, host: 8012, protocol: "tcp"
 
 	config.vm.synced_folder ".", "/vagrant", disabled: true
-	config.vm.synced_folder "./file_storage", "/var/www/corporate_chat/file_storage"
+	config.vm.synced_folder "./storage_subsystem", "/var/www/corporate_chat/storage_subsystem"
 	config.vm.synced_folder "./main_api/var", "/var/www/corporate_chat/main_api/var", disabled: true
 	config.vm.synced_folder "./main_api/vendor", "/var/www/corporate_chat/main_api/vendor", disabled: true
 	config.vm.synced_folder "./main_api", "/var/www/corporate_chat/main_api"
